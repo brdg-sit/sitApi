@@ -42,7 +42,7 @@ namespace UnrealViewerAPI.Controllers
         [Route("tableinfo")]
         public string GetProjects()
         {
-            string query = @"SELECT name as field, label as headerName FROM tbl_def_cols";
+            string query = @"SELECT name as field, label as headerName FROM tbl_def_cols order by ORDER_SORT";
 
             string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
