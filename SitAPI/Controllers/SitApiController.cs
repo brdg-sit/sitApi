@@ -115,11 +115,20 @@ namespace UnrealViewerAPI.Controllers
             var ID = jobj["id"];
 
             string query =
-                $"SELECT * " +
+                $"SELECT " +
+                $"A.mnth, " +
+                    $"A.load_cool, " +
+                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_cool, " +
+                    $"A.load_heat, " +
+                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_heat, " +
+                    $"A.load_baseElec, " +
+                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_baseElec, " +
+                    $"A.load_baseGas, " +
+                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_baseGasc " +
                 $"FROM " +
-                $"tbl_load_energy_usg A " +
+                    $"tbl_load_energy_usg A " +
                 $"WHERE " +
-                $"A.id_etr = {ID}";
+                    $"A.id_etr = {ID} AND A.is_sep = 1";
 
             string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
