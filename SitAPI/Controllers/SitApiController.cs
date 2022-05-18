@@ -47,8 +47,8 @@ namespace UnrealViewerAPI.Controllers
                 $"SELECT " +
                     $"A.id, " +
                     $"A.address, " +
-                    $"(select name from tbl_com_code where code = A.cd_north_axis) as north_axis, " +
-                    $"(select name from tbl_com_code where code = A.cd_usage_main) as usage_main, " +
+                    $"(select name from tbl_com_code where code = A.cd_north_axis) as cd_north_axis, " +
+                    $"(select name from tbl_com_code where code = A.cd_usage_main) as cd_usage_main, " +
                     $"A.usage_sub, " +
                     $"A.year, " +
                     $"A.area, " +
@@ -59,9 +59,9 @@ namespace UnrealViewerAPI.Controllers
                     $"A.u_floor, " +
                     $"A.u_window, " +
                     $"A.shgc, " +
-                    $"(select name from tbl_com_code where code = A.cd_eqmt_heat) as eqmt_heat, " +
-                    $"(select name from tbl_com_code where code = A.cd_eqmt_cool) as eqmt_cool, " +
-                    $"(select name from tbl_com_code where code = A.cd_eqmt_light) as eqmt_light, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_heat) as cd_eqmt_heat, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_cool) as cd_eqmt_cool, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_light) as cd_eqmt_light, " +
                     $"A.effcy_heat, " +
                     $"A.effcy_cool, " +
                     $"A.level_light, " +
@@ -71,7 +71,7 @@ namespace UnrealViewerAPI.Controllers
                     $"A.men_norsdt, " +
                     $"A.temp_heat, " +
                     $"A.temp_cool, " +
-                    $"(select name from tbl_com_code where code = A.cd_unitgas) as unitgas, " +
+                    $"(select name from tbl_com_code where code = A.cd_unitgas) as cd_unitgas, " +
                     $"A.area_etr " +
                 $"FROM " +
                     $"tbl_user_enter A";
