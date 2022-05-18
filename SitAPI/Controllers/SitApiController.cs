@@ -117,6 +117,7 @@ namespace UnrealViewerAPI.Controllers
             string query =
                 $"SELECT " +
                 $"A.mnth, " +
+                    $"A.id, " +
                     $"A.load_cool, " +
                     $"(select name from tbl_com_code where code = A.unit_cool) as unit_cool, " +
                     $"A.load_heat, " +
@@ -130,7 +131,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"A.id_etr = {ID} AND A.is_sep = 1";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
