@@ -1,4 +1,5 @@
 using UnrealViewerAPI.Controllers;
+using Microsoft.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,8 +20,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("https://*.brdg.kr").AllowAnyOrigin().AllowAnyHeader()
-                .SetIsOriginAllowedToAllowWildcardSubdomains();
+            //policy.WithOrigins("https://*.brdg.kr")
+            //    .WithHeaders(HeaderNames.ContentType, "x-custom-header")
+            //    .WithMethods("PUT", "GET", "OPTIONS")
+            //    .SetIsOriginAllowedToAllowWildcardSubdomains();
+            policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+            //    .SetIsOriginAllowedToAllowWildcardSubdomains();
         });
 });
 

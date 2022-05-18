@@ -61,20 +61,22 @@ namespace UnrealViewerAPI.Controllers
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 
+        //[HttpOptions]
+        //[Route("Books", Name = "Options")]
+        //public IActionResult Options()
+        //{
+        //    //HttpListenerResponse.AppendHeader("Allow", "GET,OPTIONS");
+        //    HttpContext.Response.Headers.Add("Allow", "GET, OPTIONS");
+        //    return Ok();
+        //}
 
-        // OPTIONS: api/TodoItems2/5
-        [HttpOptions("load")]
-        public IActionResult PreflightRoute(object obj)
-        {
-            return NoContent();
-        }
 
-        // OPTIONS: api/TodoItems2 
-        [HttpOptions]
-        public IActionResult PreflightRoute()
-        {
-            return NoContent();
-        }
+        //[HttpOptions]
+        //[Route("load")]
+        //public IActionResult PreflightRoute()
+        //{
+        //    return NoContent();
+        //}
 
         [HttpPost]
         [Route("load")]
