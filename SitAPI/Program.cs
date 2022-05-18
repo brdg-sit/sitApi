@@ -2,7 +2,7 @@ using UnrealViewerAPI.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-const string allowedOrigins = "_allowedOrigins";
+const string MyAllowSpecificOrigins = "_MyAllowSubdomainPolicy";
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -12,20 +12,24 @@ builder.Services.AddSwaggerGen();
 
 builder.Services
     .AddControllersWithViews();
-    //.AddNewtonsoftJson();
+//.AddNewtonsoftJson();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy(name: allowedOrigins,
-    builder =>
-    {
-        builder.AllowAnyOrigin().AllowAnyHeader();
-    });
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+        policy =>
+        {
+            policy.WithOrigins("https://*.brdg.kr").AllowAnyOrigin().AllowAnyHeader()
+                .SetIsOriginAllowedToAllowWildcardSubdomains();
+        });
 });
 
-var app = builder.Build();
+builder.Services.AddControllers();
 
-app.UseCors(allowedOrigins);
+var app = builder.Build();
+//app.UseHttpsRedirection();
+//app.UseStaticFiles();
+app.UseRouting();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -34,10 +38,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(MyAllowSpecificOrigins);
+
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapGet("/", () => "Welcome to Notes API!");
 
 app.Run();
