@@ -116,8 +116,9 @@ namespace UnrealViewerAPI.Controllers
 
             string query =
                 $"SELECT " +
-                $"A.mnth, " +
                     $"A.id, " +
+                    $"A.id_etr, " +
+                    $"A.mnth, " +
                     $"A.load_cool, " +
                     $"(select name from tbl_com_code where code = A.unit_cool) as unit_cool, " +
                     $"A.load_heat, " +
