@@ -79,8 +79,8 @@ namespace UnrealViewerAPI.Controllers
         //}
 
         [HttpPost]
-        [Route("load")]
-        public string GetLoads(object obj)
+        [Route("typload")]
+        public string GetTypLoads(object obj)
         {
             JObject? jobj = JObject.Parse(obj.ToString());
             if (jobj.Count == 0)
@@ -94,6 +94,30 @@ namespace UnrealViewerAPI.Controllers
                 $"SELECT * " +
                 $"FROM " +
                 $"tbl_load_energy_typ A " +
+                $"WHERE " +
+                $"A.id_etr = {ID}";
+
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpPost]
+        [Route("usgload")]
+        public string GetUsgLoads(object obj)
+        {
+            JObject? jobj = JObject.Parse(obj.ToString());
+            if (jobj.Count == 0)
+            {
+                return "";
+            }
+
+            var ID = jobj["id"];
+
+            string query =
+                $"SELECT * " +
+                $"FROM " +
+                $"tbl_load_energy_usg A " +
                 $"WHERE " +
                 $"A.id_etr = {ID}";
 
