@@ -12,6 +12,7 @@ using Microsoft.Web.Administration;
 using System.Net;
 using System.Transactions;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json.Linq;
 
 namespace UnrealViewerAPI.Controllers
 {
@@ -59,5 +60,30 @@ namespace UnrealViewerAPI.Controllers
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
+
+        [HttpPost]
+        [Route("load")]
+        public string GetLoads(object obj)
+        {
+            JObject? jobj = JObject.Parse(obj.ToString());
+            if (jobj.Count == 0)
+            {
+                return "";
+            }
+
+            var ID = jobj["id"];
+
+            string query =
+                $"SELECT * " +
+                $"FROM " +
+                $"tbl_load_energy_typ A " +
+                $"WHERE " +
+                $"A.id_etr = {ID}";
+
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
     }
 }
