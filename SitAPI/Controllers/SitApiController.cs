@@ -39,6 +39,17 @@ namespace UnrealViewerAPI.Controllers
         }
 
         [HttpGet]
+        [Route("userdata")]
+        public string GetUserData()
+        {
+            string query = @"SELECT * FROM tbl_user_enter";
+
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
         [Route("tableinfo")]
         public string GetProjects()
         {
