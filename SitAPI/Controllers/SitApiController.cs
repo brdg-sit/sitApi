@@ -43,9 +43,40 @@ namespace UnrealViewerAPI.Controllers
         [Route("userdata")]
         public string GetUserData()
         {
-            string query = @"SELECT * FROM tbl_user_enter";
+            string query =
+                $"SELECT " +
+                    $"A.id, " +
+                    $"A.address, " +
+                    $"(select name from tbl_com_code where code = A.cd_north_axis) as north_axis, " +
+                    $"(select name from tbl_com_code where code = A.cd_usage_main) as usage_main, " +
+                    $"A.usage_sub, " +
+                    $"A.year, " +
+                    $"A.area, " +
+                    $"A.wwr, " +
+                    $"A.aspect_ratio, " +
+                    $"A.u_wall, " +
+                    $"A.u_roof, " +
+                    $"A.u_floor, " +
+                    $"A.u_window, " +
+                    $"A.shgc, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_heat) as eqmt_heat, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_cool) as eqmt_cool, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt_light) as eqmt_light, " +
+                    $"A.effcy_heat, " +
+                    $"A.effcy_cool, " +
+                    $"A.level_light, " +
+                    $"A.hur_wday, " +
+                    $"A.hur_wend, " +
+                    $"A.men_rsdt, " +
+                    $"A.men_norsdt, " +
+                    $"A.temp_heat, " +
+                    $"A.temp_cool, " +
+                    $"(select name from tbl_com_code where code = A.cd_unitgas) as unitgas, " +
+                    $"A.area_etr " +
+                $"FROM " +
+                    $"tbl_user_enter A";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -91,13 +122,14 @@ namespace UnrealViewerAPI.Controllers
             var ID = jobj["id"];
 
             string query =
-                $"SELECT * " +
+                $"SELECT " +
+                    $"* " +
                 $"FROM " +
-                $"tbl_load_energy_typ A " +
+                    $"tbl_load_energy_typ A " +
                 $"WHERE " +
-                $"A.id_etr = {ID}";
+                    $"A.id_etr = {ID}";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
