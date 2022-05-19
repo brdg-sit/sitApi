@@ -184,23 +184,44 @@ namespace UnrealViewerAPI.Controllers
             if (ids.Count() == 0)
                 return "";
 
-            string joinIds = string.Empty;
-            for (int i = 0; i < ids.Count(); i++)
+            try
             {
-                joinIds += $"{ids[i]},";
+                string joinIds = string.Empty;
+                for (int i = 0; i < ids.Count(); i++)
+                {
+                    joinIds += $"{ids[i]},";
+                }
+                joinIds = joinIds.Substring(0, joinIds.Length - 1);
+
+                string query =
+                    $"DELETE FROM " +
+                        $"tbl_load_energy_typ " +
+                    $"WHERE " +
+                        $"id_etr in ({joinIds})";
+
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+                transaction.GetTableFromDB(query, dataSource);
+
+                query =
+                    $"DELETE FROM " +
+                        $"tbl_load_energy_usg " +
+                    $"WHERE " +
+                        $"id_etr in ({joinIds})";
+
+                transaction.GetTableFromDB(query, dataSource);
+
+                query =
+                    $"DELETE FROM " +
+                        $"tbl_user_enter " +
+                    $"WHERE " +
+                        $"id in ({joinIds})";
+
+                return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
             }
-            joinIds = joinIds.Substring(0, joinIds.Length - 1);
-
-            string query =
-                $"DELETE FROM " +
-                    $"tbl_user_enter " +
-                $"WHERE " +
-                    $"id in ({joinIds})";
-
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
-
-            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+            catch (Exception)
+            {
+                return "";
+            }
         }
-
     }
 }
