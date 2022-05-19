@@ -72,7 +72,8 @@ namespace UnrealViewerAPI.Controllers
                     $"A.temp_heat, " +
                     $"A.temp_cool, " +
                     $"(select name from tbl_com_code where code = A.cd_unitgas) as cd_unitgas, " +
-                    $"A.area_etr " +
+                    $"A.area_etr, " +
+                    $"A.dt_create " +
                 $"FROM " +
                     $"tbl_user_enter A";
 
