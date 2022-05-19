@@ -223,5 +223,99 @@ namespace UnrealViewerAPI.Controllers
                 return "";
             }
         }
+
+        [HttpPost]
+        [Route("save")]
+        public string SaveRow(object obj)
+        {
+            JObject? jobj = JObject.Parse(obj.ToString());
+            if (jobj.Count == 0)
+            {
+                return "";
+            }
+
+            var ID = jobj["id"];
+
+            try
+            {
+                string query =
+                    $"SELECT " +
+                        $"count(*) " +
+                    $"FROM " +
+                        $"tbl_user_enter A " +
+                    $"WHERE " +
+                        $"A.id = {ID}";
+
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+
+                var dt = transaction.GetTableFromDB(query, dataSource);
+               var count =  Convert.ToInt32(dt.Rows[0][0]);
+
+                if (count == 0)
+                {
+                    query = $"INSERT INTO tbl_user_enter(";
+                    string fields = string.Empty;
+                    int i = 0;
+                    foreach (var j in jobj)
+                    {
+                        if (j.Key != "id")
+                        {
+                            fields += $"{j.Key},";
+                            i++;
+                        }
+                    }
+                    fields = fields.Substring(0, fields.Length - 1);
+                    fields += ") ";
+
+                    string values = "VALUES(";
+                    i = 0;
+                    foreach (var j in jobj)
+                    {
+                        if (j.Key != "id")
+                        {
+                            if (j.Key == "dt_create")
+                            {
+                                values += $"GETDATE(),";
+                            }
+                            else
+                            {
+                                values += $"'{j.Value}',";
+                            }
+                            i++;
+                        }
+                    }
+                    values = values.Substring(0, values.Length - 1);
+                    values += ");";
+
+                    query += fields + values;
+                }
+                else
+                {
+                    // update
+                    query = $"UPDATE tbl_user_enter SET ";
+                    int i = 0;
+                    foreach (var j in jobj)
+                    {
+                        if (j.Key != "id")
+                        {
+                            query += $"{j.Key} = '{j.Value}'";
+                            if (i < jobj.Count - 1)
+                            {
+                                query += ", ";
+                            }
+                            i++;
+                        }
+                    }
+
+                    query += $" WHERE id = {ID}";
+                }
+
+                return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+            }
+            catch (Exception ex)
+            {
+                return "";
+            }
+        }
     }
 }
