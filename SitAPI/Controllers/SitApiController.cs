@@ -170,5 +170,37 @@ namespace UnrealViewerAPI.Controllers
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 
+        [HttpPost]
+        [Route("delete")]
+        public string DeleteRows(object obj)
+        {
+            JObject? jobj = JObject.Parse(obj.ToString());
+            if (jobj.Count == 0)
+            {
+                return "";
+            }
+
+            var ids = jobj["id"];
+
+            string joinIds = string.Empty;
+            for (int i = 0; i < ids.Count(); i++)
+            {
+                joinIds += $"{ids[i]},";
+            }
+            joinIds = joinIds.Substring(0, joinIds.Length - 1);
+
+            string query =
+                $"SELECT " +
+                    $"* " +
+                $"FROM " +
+                    $"tbl_user_enter A " +
+                $"WHERE " +
+                    $"A.id in ({joinIds})";
+
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
     }
 }
