@@ -86,7 +86,7 @@ namespace UnrealViewerAPI.Controllers
         [Route("tableinfo")]
         public string GetProjects(string nmTable)
         {
-            string query = $"SELECT name as field, label as headerName FROM tbl_def_cols WHERE [table] = '{nmTable}' order by ORDER_SORT";
+            string query = $"SELECT name as field, label as headerName, editable FROM tbl_def_cols WHERE [table] = '{nmTable}' order by ORDER_SORT";
 
             string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
@@ -199,7 +199,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"id_etr in ({joinIds})";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
                 transaction.GetTableFromDB(query, dataSource);
 
                 query =
