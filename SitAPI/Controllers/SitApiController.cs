@@ -199,7 +199,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"id_etr in ({joinIds})";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
                 transaction.GetTableFromDB(query, dataSource);
 
                 query =
