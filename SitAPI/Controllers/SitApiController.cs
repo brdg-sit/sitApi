@@ -181,6 +181,8 @@ namespace UnrealViewerAPI.Controllers
             }
 
             var ids = jobj["id"];
+            if (ids.Count() == 0)
+                return "";
 
             string joinIds = string.Empty;
             for (int i = 0; i < ids.Count(); i++)
@@ -190,14 +192,12 @@ namespace UnrealViewerAPI.Controllers
             joinIds = joinIds.Substring(0, joinIds.Length - 1);
 
             string query =
-                $"SELECT " +
-                    $"* " +
-                $"FROM " +
-                    $"tbl_user_enter A " +
+                $"DELETE FROM " +
+                    $"tbl_user_enter " +
                 $"WHERE " +
-                    $"A.id in ({joinIds})";
+                    $"id in ({joinIds})";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
