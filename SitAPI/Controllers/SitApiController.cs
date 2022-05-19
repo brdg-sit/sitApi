@@ -77,7 +77,7 @@ namespace UnrealViewerAPI.Controllers
                 $"FROM " +
                     $"tbl_user_enter A";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -130,7 +130,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"A.id_etr = {ID}";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -165,7 +165,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"A.id_etr = {ID} AND A.is_sep = 1";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
