@@ -320,5 +320,23 @@ namespace UnrealViewerAPI.Controllers
                 return JsonConvert.SerializeObject(ex);
             }
         }
+
+        [HttpGet]
+        [Route("defaults")]
+        public string GetDefaults()
+        {
+            string query = @"SELECT * FROM tbl_user_enter_def";
+            string dataSource = _configuration.GetConnectionString("PROD");
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
+        [Route("codes")]
+        public string GetCodes()
+        {
+            string query = @"SELECT * FROM tbl_com_code";
+            string dataSource = _configuration.GetConnectionString("PROD");
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
     }
 }
