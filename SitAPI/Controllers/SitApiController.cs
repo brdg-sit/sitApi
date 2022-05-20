@@ -226,12 +226,12 @@ namespace UnrealViewerAPI.Controllers
 
         [HttpPost]
         [Route("save")]
-        public string SaveRow(object obj)
+        public JsonResult SaveRow(object obj)
         {
             JObject? jobj = JObject.Parse(obj.ToString());
             if (jobj.Count == 0)
             {
-                return "";
+                return new JsonResult(null);
             }
 
             var ID = jobj["id"];
@@ -246,7 +246,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"A.id = {ID}";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
 
                 var dt = transaction.GetTableFromDB(query, dataSource);
                var count =  Convert.ToInt32(dt.Rows[0][0]);
@@ -310,11 +310,11 @@ namespace UnrealViewerAPI.Controllers
                     query += $" WHERE id = {ID}";
                 }
 
-                return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+                return new JsonResult(transaction.GetTableFromDB(query, dataSource));
             }
             catch (Exception ex)
             {
-                return ex.ToString();
+                return new JsonResult(ex);
             }
         }
     }
