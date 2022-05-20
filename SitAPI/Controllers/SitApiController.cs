@@ -59,8 +59,7 @@ namespace UnrealViewerAPI.Controllers
                     $"A.u_floor, " +
                     $"A.u_window, " +
                     $"A.shgc, " +
-                    $"(select name from tbl_com_code where code = A.cd_eqmt_heat) as cd_eqmt_heat, " +
-                    $"(select name from tbl_com_code where code = A.cd_eqmt_cool) as cd_eqmt_cool, " +
+                    $"(select name from tbl_com_code where code = A.cd_eqmt) as cd_eqmt, " +
                     $"(select name from tbl_com_code where code = A.cd_eqmt_light) as cd_eqmt_light, " +
                     $"A.effcy_heat, " +
                     $"A.effcy_cool, " +
