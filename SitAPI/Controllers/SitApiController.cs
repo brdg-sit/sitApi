@@ -34,7 +34,7 @@ namespace UnrealViewerAPI.Controllers
         {
             string query = @"SELECT * FROM tbl_ml";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("PROD");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -77,7 +77,7 @@ namespace UnrealViewerAPI.Controllers
                 $"FROM " +
                     $"tbl_user_enter A";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("PROD");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -88,27 +88,10 @@ namespace UnrealViewerAPI.Controllers
         {
             string query = $"SELECT name as field, label as headerName, editable FROM tbl_def_cols WHERE [table] = '{nmTable}' order by ORDER_SORT";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("PROD");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
-
-        //[HttpOptions]
-        //[Route("Books", Name = "Options")]
-        //public IActionResult Options()
-        //{
-        //    //HttpListenerResponse.AppendHeader("Allow", "GET,OPTIONS");
-        //    HttpContext.Response.Headers.Add("Allow", "GET, OPTIONS");
-        //    return Ok();
-        //}
-
-
-        //[HttpOptions]
-        //[Route("load")]
-        //public IActionResult PreflightRoute()
-        //{
-        //    return NoContent();
-        //}
 
         [HttpPost]
         [Route("typload")]
@@ -130,7 +113,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"A.id_etr = {ID}";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("PROD");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -165,7 +148,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"A.id_etr = {ID} AND A.is_sep = 1";
 
-            string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+            string dataSource = _configuration.GetConnectionString("PROD");
 
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
@@ -199,7 +182,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"id_etr in ({joinIds})";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+                string dataSource = _configuration.GetConnectionString("PROD");
                 transaction.GetTableFromDB(query, dataSource);
 
                 query =
@@ -246,7 +229,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"A.id = {ID}";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
+                string dataSource = _configuration.GetConnectionString("PROD");
 
                 var dt = transaction.GetTableFromDB(query, dataSource);
                var count =  Convert.ToInt32(dt.Rows[0][0]);
