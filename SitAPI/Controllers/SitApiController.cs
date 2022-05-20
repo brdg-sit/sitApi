@@ -314,7 +314,7 @@ namespace UnrealViewerAPI.Controllers
             }
             catch (Exception ex)
             {
-                return "";
+                return ex.ToString();
             }
         }
     }
