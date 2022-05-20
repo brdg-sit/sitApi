@@ -218,20 +218,20 @@ namespace UnrealViewerAPI.Controllers
 
                 return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return "";
+                return JsonConvert.SerializeObject(ex);
             }
         }
 
         [HttpPost]
         [Route("save")]
-        public JsonResult SaveRow(object obj)
+        public string SaveRow(object obj)
         {
             JObject? jobj = JObject.Parse(obj.ToString());
             if (jobj.Count == 0)
             {
-                return new JsonResult(null);
+                return "";
             }
 
             var ID = jobj["id"];
@@ -246,7 +246,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"A.id = {ID}";
 
-                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString_dns");
+                string dataSource = _configuration.GetConnectionString("MSSQLServerConnectionString");
 
                 var dt = transaction.GetTableFromDB(query, dataSource);
                var count =  Convert.ToInt32(dt.Rows[0][0]);
@@ -298,23 +298,26 @@ namespace UnrealViewerAPI.Controllers
                     {
                         if (j.Key != "id")
                         {
-                            query += $"{j.Key} = '{j.Value}'";
-                            if (i < jobj.Count - 1)
+                            if (j.Key == "dt_create")
                             {
-                                query += ", ";
+                            }
+                            else
+                            {
+                                query += $"{j.Key} = '{j.Value}',";
                             }
                             i++;
                         }
                     }
+                    query = query.Substring(0, query.Length - 1);
 
                     query += $" WHERE id = {ID}";
                 }
 
-                return new JsonResult(transaction.GetTableFromDB(query, dataSource));
+                return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
             }
             catch (Exception ex)
             {
-                return new JsonResult(ex);
+                return JsonConvert.SerializeObject(ex);
             }
         }
     }
