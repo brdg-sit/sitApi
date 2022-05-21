@@ -106,7 +106,13 @@ namespace UnrealViewerAPI.Controllers
 
             string query =
                 $"SELECT " +
-                    $"* " +
+                    $"A.id, " +
+                    $"A.id_etr, " +
+                    $"A.mnth, " +
+                    $"A.load_gas, " +
+                    $"(select value from tbl_com_code where code = A.unit_gas) as unit_gas, " +
+                    $"A.load_elec, " +
+                    $"(select value from tbl_com_code where code = A.unit_elec) as unit_elec " +
                 $"FROM " +
                     $"tbl_load_energy_typ A " +
                 $"WHERE " +
@@ -135,13 +141,13 @@ namespace UnrealViewerAPI.Controllers
                     $"A.id_etr, " +
                     $"A.mnth, " +
                     $"A.load_cool, " +
-                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_cool, " +
+                    $"(select value from tbl_com_code where code = A.unit_cool) as unit_cool, " +
                     $"A.load_heat, " +
-                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_heat, " +
+                    $"(select value from tbl_com_code where code = A.unit_cool) as unit_heat, " +
                     $"A.load_baseElec, " +
-                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_baseElec, " +
+                    $"(select value from tbl_com_code where code = A.unit_cool) as unit_baseElec, " +
                     $"A.load_baseGas, " +
-                    $"(select name from tbl_com_code where code = A.unit_cool) as unit_baseGasc " +
+                    $"(select value from tbl_com_code where code = A.unit_cool) as unit_baseGasc " +
                 $"FROM " +
                     $"tbl_load_energy_usg A " +
                 $"WHERE " +
