@@ -326,5 +326,14 @@ namespace UnrealViewerAPI.Controllers
             string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
+
+        [HttpGet]
+        [Route("uval")]
+        public string GetUVals()
+        {
+            string query = @"SELECT * FROM tbl_uval_year";
+            string dataSource = _configuration.GetConnectionString("PROD");
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
     }
 }
