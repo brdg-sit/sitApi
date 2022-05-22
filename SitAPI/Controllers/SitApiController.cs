@@ -389,6 +389,107 @@ namespace UnrealViewerAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("energyusage")]
+        public void PostEnergyUsage([FromBody] EnergyUsage energyUsage)
+        {
+            var elecJson = Convert.ToString(energyUsage.elec_data);
+            var elecDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(elecJson);
+
+            var gasJson = Convert.ToString(energyUsage.gas_data);
+            var gasDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(gasJson);
+
+            Dictionary<string, int> energyDict;
+
+            if (energyUsage.is_ehp)
+            {
+                foreach (var elec in elecDict)
+                {
+                    elecDict[elec.Key] = elec.Value - energyUsage.base_ec;
+                }
+                energyDict = elecDict;
+            }
+            else
+            {
+                foreach (var gas in gasDict)
+                {
+                    gasDict[gas.Key] = gas.Value - energyUsage.base_ec;
+                }
+                energyDict = gasDict;
+            }
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection())
+                {
+                    connection.ConnectionString = _configuration.GetConnectionString("PROD");
+                    connection.Open();
+
+                    string query = @"INSERT INTO tbl_load_energy_usg VALUES" +
+                        "(@id_etr, @is_sep, @mnth, @load_cool, @load_heat, @unit_cool, @unit_heat, @load_baseElec, @load_baseGas, @unit_baseElec, @unit_baseGas)";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.Add("@id_etr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@is_sep", SqlDbType.NVarChar);
+                        command.Parameters.Add("@mnth", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_baseElec", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_baseGas", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_baseElec", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_baseGas", SqlDbType.NVarChar);
+
+                        int month = 1;
+
+                        foreach (var energy in energyDict)
+                        {
+                            command.Parameters["@id_etr"].Value = (object)energyUsage.id_etr ?? DBNull.Value;
+                            command.Parameters["@is_sep"].Value = 1;
+                            command.Parameters["@mnth"].Value = month;
+
+                            if (month > 4 && month < 11)
+                            {
+                                command.Parameters["@load_cool"].Value = energy.Value;
+                                command.Parameters["@load_heat"].Value = 0;
+
+                            }
+                            else
+                            {
+                                command.Parameters["@load_cool"].Value = 0;
+                                command.Parameters["@load_heat"].Value = energy.Value;
+                            }
+
+                            if (energyUsage.is_ehp)
+                            {
+                                command.Parameters["@load_baseElec"].Value = (object)energyUsage.base_ec ?? DBNull.Value;
+                                command.Parameters["@load_baseGas"].Value = gasDict[energy.Key];
+                                command.Parameters["@unit_cool"].Value = (object)energyUsage.unit_elec ?? DBNull.Value;
+                                command.Parameters["@unit_heat"].Value = (object)energyUsage.unit_elec ?? DBNull.Value;
+                            }
+                            else
+                            {
+                                command.Parameters["@load_baseElec"].Value = elecDict[energy.Key];
+                                command.Parameters["@load_baseGas"].Value = (object)energyUsage.base_ec ?? DBNull.Value;
+                                command.Parameters["@unit_cool"].Value = (object)energyUsage.unit_gas ?? DBNull.Value;
+                                command.Parameters["@unit_heat"].Value = (object)energyUsage.unit_gas ?? DBNull.Value;
+                            }
+
+                            command.Parameters["@unit_baseElec"].Value = (object)energyUsage.unit_elec ?? DBNull.Value;
+                            command.Parameters["@unit_baseGas"].Value = (object)energyUsage.unit_gas ?? DBNull.Value;
+
+                            command.ExecuteNonQuery();
+                            month++;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
 
         [HttpPost]
         [Route("userenter")]
@@ -542,5 +643,15 @@ namespace UnrealViewerAPI.Controllers
         public int unit_gas { get; set; }
         public dynamic elec_data { get; set; }
         public dynamic gas_data { get; set; }
+    }
+    public class EnergyUsage
+    {
+        public int id_etr { get; set; }
+        public int base_ec { get; set; }
+        public int unit_elec { get; set; }
+        public int unit_gas { get; set; }
+        public dynamic elec_data { get; set; }
+        public dynamic gas_data { get; set; }
+        public bool is_ehp { get; set; }
     }
 }
