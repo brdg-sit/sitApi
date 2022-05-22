@@ -13,6 +13,8 @@ using System.Net;
 using System.Transactions;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
+using System.Globalization;
+using System.Data.SqlClient;
 
 namespace UnrealViewerAPI.Controllers
 {
@@ -335,5 +337,210 @@ namespace UnrealViewerAPI.Controllers
             string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
+
+        [HttpPost]
+        [Route("energytyp")]
+        public void PostEnergyType([FromBody] EnergyType energyType)
+        {
+            var elecJson = Convert.ToString(energyType.elec_data);
+            var elecDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(elecJson);
+
+            var gasJson = Convert.ToString(energyType.gas_data);
+            var gasDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(gasJson);
+
+            try
+            {
+                using (SqlConnection connection = new SqlConnection())
+                {
+                    connection.ConnectionString = _configuration.GetConnectionString("PROD");
+                    connection.Open();
+
+                    string query = @"INSERT INTO tbl_load_energy_typ VALUES" +
+                        "(@id_etr, @mnth, @load_gas, @load_elec, @unit_gas, @unit_elec)";
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.Add("@id_etr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@mnth", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_gas", SqlDbType.NVarChar);
+                        command.Parameters.Add("@load_elec", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_gas", SqlDbType.NVarChar);
+                        command.Parameters.Add("@unit_elec", SqlDbType.NVarChar);
+
+                        int month = 1;
+
+                        foreach (var elec in elecDict)
+                        {
+                            command.Parameters["@id_etr"].Value = (object)energyType.id_etr ?? DBNull.Value;
+                            command.Parameters["@mnth"].Value = month;
+                            command.Parameters["@load_gas"].Value = elec.Value;
+                            command.Parameters["@load_elec"].Value = gasDict[elec.Key];
+                            command.Parameters["@unit_gas"].Value = (object)energyType.unit_gas ?? DBNull.Value;
+                            command.Parameters["@unit_elec"].Value = (object)energyType.unit_elec ?? DBNull.Value;
+
+                            command.ExecuteNonQuery();
+                            month++;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
+
+        [HttpPost]
+        [Route("userenter")]
+        public int PostUserEnter([FromBody] UserEnter userEnter)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection())
+                {
+                    connection.ConnectionString = _configuration.GetConnectionString("PROD");
+                    connection.Open();
+
+                    //string body = Request.Content.ReadAsStringAsync().Result;
+
+                    //string test = Convert.ToString(obj);
+                    string query = @"INSERT INTO tbl_user_enter OUTPUT INSERTED.id VALUES" +
+                    "(@address, @cd_north_axis, @cd_usage_main, @usage_sub, @year, @area, @wwr, " +
+                    "@isetr_wwr, @aspect_ratio, @isetr_aspect_ratio, @u_wall, @u_roof, @u_floor, " +
+                    "@u_window, @shgc, @cd_eqmt, @effcy_heat, @effcy_cool, @cd_eqmt_light, @level_light, " +
+                    "@isetr_light, @hur_wday, @hur_wend, @men_rsdt, @men_norsdt, @temp_heat, @temp_cool, " +
+                    "@cd_unitgas, @isetr_u_wall, @isetr_u_roof, @isetr_u_floor, @isetr_u_window, @isetr_shgc, " +
+                    "@area_etr, @dt_create)";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.Add("@address", SqlDbType.NVarChar);
+                        command.Parameters.Add("@cd_north_axis", SqlDbType.NVarChar);
+                        command.Parameters.Add("@cd_usage_main", SqlDbType.NVarChar);
+                        command.Parameters.Add("@usage_sub", SqlDbType.NVarChar);
+                        command.Parameters.Add("@year", SqlDbType.NVarChar);
+                        command.Parameters.Add("@area", SqlDbType.NVarChar);
+                        command.Parameters.Add("@wwr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_wwr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@aspect_ratio", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_aspect_ratio", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_wall", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_roof", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_floor", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_window", SqlDbType.NVarChar);
+                        command.Parameters.Add("@shgc", SqlDbType.NVarChar);
+                        command.Parameters.Add("@cd_eqmt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@cd_eqmt_light", SqlDbType.NVarChar);
+                        command.Parameters.Add("@level_light", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_light", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wday", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wend", SqlDbType.NVarChar);
+                        command.Parameters.Add("@men_rsdt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@men_norsdt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@cd_unitgas", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_u_wall", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_u_roof", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_u_floor", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_u_window", SqlDbType.NVarChar);
+                        command.Parameters.Add("@isetr_shgc", SqlDbType.NVarChar);
+                        command.Parameters.Add("@area_etr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@dt_create", SqlDbType.NVarChar);
+
+                        command.Parameters["@address"].Value = (object)userEnter.address ?? DBNull.Value;
+                        command.Parameters["@cd_north_axis"].Value = (object)userEnter.cd_north_axis ?? DBNull.Value;
+                        command.Parameters["@cd_usage_main"].Value = (object)userEnter.cd_usage_main ?? DBNull.Value;
+                        command.Parameters["@usage_sub"].Value = (object)userEnter.usage_sub ?? DBNull.Value;
+                        command.Parameters["@year"].Value = (object)userEnter.year ?? DBNull.Value;
+                        command.Parameters["@area"].Value = (object)userEnter.area ?? DBNull.Value;
+                        command.Parameters["@wwr"].Value = (object)userEnter.wwr ?? DBNull.Value;
+                        command.Parameters["@isetr_wwr"].Value = (object)userEnter.isetr_wwr ?? DBNull.Value;
+                        command.Parameters["@aspect_ratio"].Value = (object)userEnter.aspect_ratio ?? DBNull.Value;
+                        command.Parameters["@isetr_aspect_ratio"].Value = (object)userEnter.isetr_aspect_ratio ?? DBNull.Value;
+                        command.Parameters["@u_wall"].Value = (object)userEnter.u_wall ?? DBNull.Value;
+                        command.Parameters["@u_roof"].Value = (object)userEnter.u_roof ?? DBNull.Value;
+                        command.Parameters["@u_floor"].Value = (object)userEnter.u_floor ?? DBNull.Value;
+                        command.Parameters["@u_window"].Value = (object)userEnter.u_window ?? DBNull.Value;
+                        command.Parameters["@shgc"].Value = (object)userEnter.shgc ?? DBNull.Value;
+                        command.Parameters["@cd_eqmt"].Value = (object)userEnter.cd_eqmt ?? DBNull.Value;
+                        command.Parameters["@effcy_heat"].Value = (object)userEnter.effcy_heat ?? DBNull.Value;
+                        command.Parameters["@effcy_cool"].Value = (object)userEnter.effcy_cool ?? DBNull.Value;
+                        command.Parameters["@cd_eqmt_light"].Value = (object)userEnter.cd_eqmt_light ?? DBNull.Value;
+                        command.Parameters["@level_light"].Value = (object)userEnter.level_light ?? DBNull.Value;
+                        command.Parameters["@isetr_light"].Value = (object)userEnter.isetr_light ?? DBNull.Value;
+                        command.Parameters["@hur_wday"].Value = (object)userEnter.hur_wday ?? DBNull.Value;
+                        command.Parameters["@hur_wend"].Value = (object)userEnter.hur_wend ?? DBNull.Value;
+                        command.Parameters["@men_rsdt"].Value = (object)userEnter.men_rsdt ?? DBNull.Value;
+                        command.Parameters["@men_norsdt"].Value = (object)userEnter.men_norsdt ?? DBNull.Value;
+                        command.Parameters["@temp_heat"].Value = (object)userEnter.temp_heat ?? DBNull.Value;
+                        command.Parameters["@temp_cool"].Value = (object)userEnter.temp_cool ?? DBNull.Value;
+                        command.Parameters["@cd_unitgas"].Value = (object)userEnter.cd_unitgas ?? DBNull.Value;
+                        command.Parameters["@isetr_u_wall"].Value = (object)userEnter.isetr_u_wall ?? DBNull.Value;
+                        command.Parameters["@isetr_u_roof"].Value = (object)userEnter.isetr_u_roof ?? DBNull.Value;
+                        command.Parameters["@isetr_u_floor"].Value = (object)userEnter.isetr_u_floor ?? DBNull.Value;
+                        command.Parameters["@isetr_u_window"].Value = (object)userEnter.isetr_u_window ?? DBNull.Value;
+                        command.Parameters["@isetr_shgc"].Value = (object)userEnter.isetr_shgc ?? DBNull.Value;
+                        command.Parameters["@area_etr"].Value = (object)userEnter.area_etr ?? DBNull.Value;
+                        command.Parameters["@dt_create"].Value = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss tt", CultureInfo.CreateSpecificCulture("en-US"));
+
+                        return (int)command.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
+    }
+
+    public class UserEnter
+    {
+        public string address { get; set; }
+        public float cd_north_axis { get; set; }
+        public int cd_usage_main { get; set; }
+        public string usage_sub { get; set; }
+        public int year { get; set; }
+        public float area { get; set; }
+        public float wwr { get; set; }
+        public int isetr_wwr { get; set; }
+        public float aspect_ratio { get; set; }
+        public int isetr_aspect_ratio { get; set; }
+        public float area_etr { get; set; }
+        public string u_wall { get; set; }
+        public string u_roof { get; set; }
+        public string u_floor { get; set; }
+        public string u_window { get; set; }
+        public string shgc { get; set; }
+        public int cd_eqmt { get; set; }
+        public float effcy_heat { get; set; }
+        public float effcy_cool { get; set; }
+        public int cd_eqmt_light { get; set; }
+        public float level_light { get; set; }
+        public int isetr_light { get; set; }
+        public int isetr_u_wall { get; set; }
+        public int isetr_u_roof { get; set; }
+        public int isetr_u_floor { get; set; }
+        public int isetr_u_window { get; set; }
+        public int isetr_shgc { get; set; }
+        public string hur_wday { get; set; }
+        public string hur_wend { get; set; }
+        public float men_rsdt { get; set; }
+        public float men_norsdt { get; set; }
+        public float temp_heat { get; set; }
+        public float temp_cool { get; set; }
+        public int cd_unitgas { get; set; }
+    }
+
+    public class EnergyType
+    {
+        public int id_etr { get; set; }
+        public int unit_elec { get; set; }
+        public int unit_gas { get; set; }
+        public dynamic elec_data { get; set; }
+        public dynamic gas_data { get; set; }
     }
 }

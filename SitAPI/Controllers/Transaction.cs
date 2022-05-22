@@ -65,5 +65,22 @@ namespace UnrealViewerAPI.Controllers
 
             return dataSet;
         }
+
+        public void InsertIntoDB(string query, SqlCommand command, string connectionString)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection())
+                {
+                    connection.ConnectionString = connectionString;
+                    connection.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch(Exception ex)
+            {
+
+            }
+        }
     }
 }
