@@ -372,8 +372,8 @@ namespace UnrealViewerAPI.Controllers
                         {
                             command.Parameters["@id_etr"].Value = (object)energyType.id_etr ?? DBNull.Value;
                             command.Parameters["@mnth"].Value = month;
-                            command.Parameters["@load_gas"].Value = elec.Value;
-                            command.Parameters["@load_elec"].Value = gasDict[elec.Key];
+                            command.Parameters["@load_gas"].Value = gasDict[elec.Key];
+                            command.Parameters["@load_elec"].Value = elec.Value;
                             command.Parameters["@unit_gas"].Value = (object)energyType.unit_gas ?? DBNull.Value;
                             command.Parameters["@unit_elec"].Value = (object)energyType.unit_elec ?? DBNull.Value;
 
