@@ -368,13 +368,13 @@ namespace UnrealViewerAPI.Controllers
                 // mlJson: 사용자입력값 예측 부분, cool, heat, baseElec 3번 실행
                 // mlStddJson: 일반사용형태 예측 부분, cool, heat, baseElec 3번 실행
                 // 총 6번 예측 실행
-                double mlStdd_load_cool = 0;
-                double mlStdd_load_heat = 0;
-                double mlStdd_load_baseElec = 0;
+                double mlStdd_load_cool = 0.9;
+                double mlStdd_load_heat = 0.9;
+                double mlStdd_load_baseElec = 0.9;
 
-                double ml_load_cool = 0;
-                double ml_load_heat = 0;
-                double ml_load_baseElec = 0;
+                double ml_load_cool = 1;
+                double ml_load_heat = 1;
+                double ml_load_baseElec = 1;
                 // ==================
 
                 // 용도별 에너지 비율
