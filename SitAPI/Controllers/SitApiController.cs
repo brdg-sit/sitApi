@@ -341,11 +341,64 @@ namespace UnrealViewerAPI.Controllers
 
         [HttpGet]
         [Route("get-energyusage")]
-        public string GetEnergyUsage(string id_etr, string is_sep)
+        public string GetEnergyUsage(string id_etr)
         {
-            string query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep={1}", id_etr, is_sep);
+            // 1: 분리분산
+            string query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep=1", id_etr);
             string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
+        [Route("get-energyusage-ml")]
+        public string GetEnergyUsageML(string id_etr, string area, string eqmt)
+        {
+            try
+            {
+                string cdEqmt = eqmt == "EHP" ? "401" : "402";
+
+                string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0} AND area='{1}' AND eqmt='{2}'", id_etr, area, cdEqmt);
+                string dataSource = _configuration.GetConnectionString("PROD");
+                string mlJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+
+                query = string.Format("SELECT * FROM tbl_ml_stdd WHERE id_etr={0} AND area='{1}' AND eqmt='{2}'", id_etr, area, cdEqmt);
+                string mlStddJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+
+                // ML 예측 ===========
+                // mlJson: 사용자입력값 예측 부분, cool, heat, baseElec 3번 실행
+                // mlStddJson: 일반사용형태 예측 부분, cool, heat, baseElec 3번 실행
+                // 총 6번 예측 실행
+                double mlStdd_load_cool = 0;
+                double mlStdd_load_heat = 0;
+                double mlStdd_load_baseElec = 0;
+
+                double ml_load_cool = 0;
+                double ml_load_heat = 0;
+                double ml_load_baseElec = 0;
+                // ==================
+
+                // 용도별 에너지 비율
+                double rate_load_cool = mlStdd_load_cool / ml_load_cool;
+                double rate_load_heat = mlStdd_load_heat / ml_load_heat;
+                double rate_load_baseElec = mlStdd_load_baseElec / ml_load_baseElec;
+
+                query =
+                    $"SELECT " +
+                        $"mnth, " +
+                        $"(load_cool * {rate_load_cool}) as load_cool, " +
+                        $"(load_heat * {rate_load_heat}) as load_heat, " +
+                        $"(load_baseElec * {rate_load_baseElec}) as load_baseElec " +
+                    $"FROM " +
+                        $"tbl_load_energy_usg " +
+                    $"WHERE " +
+                        $"id_etr = {id_etr} AND is_sep = 1;";
+
+                return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
 
         [HttpGet]
