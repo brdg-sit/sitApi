@@ -339,20 +339,34 @@ namespace UnrealViewerAPI.Controllers
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 
-        //[HttpGet]
-        //[Route("get-energyusage")]
-        //public string GetEnergyUsage(string id_etr)
-        //{
-        //    string query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep=1", id_etr);
-        //    string dataSource = _configuration.GetConnectionString("PROD");
-        //    return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
-        //}
-
         [HttpGet]
         [Route("get-energyusage")]
         public string GetEnergyUsage(string id_etr, string is_sep)
         {
             string query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep={1}", id_etr, is_sep);
+            string dataSource = _configuration.GetConnectionString("PROD");
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
+        [Route("get-energyusage-avg")]
+        public string GetEnergyUsageAvg(string area, string eqmt, string wday, string wend)
+        {
+            string query = 
+                $"SELECT " +
+                    $"mnth, AVG(load_cool) as load_cool, AVG(load_heat) as load_heat, AVG(load_baseElec) as load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr in " +
+                    $"(SELECT " +
+                        $"id " +
+                    $"FROM " +
+                        $"tbl_user_enter " +
+                    $"WHERE " +
+                        $"area='{area}' AND cd_eqmt='{eqmt}' AND hur_wday={wday} AND hur_wend={wend}) " +
+                $"GROUP BY mnth";
+
             string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
