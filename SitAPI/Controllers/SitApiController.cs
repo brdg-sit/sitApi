@@ -680,9 +680,9 @@ namespace UnrealViewerAPI.Controllers
                         command.Parameters["@eqmt"].Value = (object)ml.cd_eqmt ?? DBNull.Value;
                         command.Parameters["@area"].Value = (object)ml.area ?? DBNull.Value;
                         command.Parameters["@aspect_ratio"].Value = (object)ml.aspect_ratio ?? DBNull.Value;
-                        command.Parameters["@temp_cool"].Value = 28;
+                        command.Parameters["@temp_cool"].Value = (object)ml.temp_cool ?? DBNull.Value;
                         command.Parameters["@pwr_eqmt"].Value = (object)ml.pwr_eqmt ?? DBNull.Value;
-                        command.Parameters["@temp_heat"].Value = 18;
+                        command.Parameters["@temp_heat"].Value = (object)ml.temp_heat ?? DBNull.Value;
                         command.Parameters["@level_light"].Value = (object)ml.level_light ?? DBNull.Value;
                         command.Parameters["@north_axis"].Value = north_axis ?? DBNull.Value;
                         command.Parameters["@occupancy"].Value = (object)ml.occupancy ?? DBNull.Value;
@@ -691,8 +691,8 @@ namespace UnrealViewerAPI.Controllers
                         command.Parameters["@u_roof"].Value = (object)ml.u_roof ?? DBNull.Value;
                         command.Parameters["@u_wall"].Value = (object)ml.u_wall ?? DBNull.Value;
                         command.Parameters["@u_window"].Value = (object)ml.u_window ?? DBNull.Value;
-                        command.Parameters["@hur_wday"].Value = 8;
-                        command.Parameters["@hur_wend"].Value = 0;
+                        command.Parameters["@hur_wday"].Value = (object)ml.hur_wday ?? DBNull.Value;
+                        command.Parameters["@hur_wend"].Value = (object)ml.hur_wend ?? DBNull.Value;
                         command.Parameters["@wwr"].Value = (object)ml.wwr ?? DBNull.Value;
                         command.Parameters["@effcy_cool"].Value = (object)ml.effcy_cool ?? DBNull.Value;
                         command.Parameters["@effcy_heat"].Value = (object)ml.effcy_heat ?? DBNull.Value;
@@ -758,9 +758,9 @@ namespace UnrealViewerAPI.Controllers
                         command.Parameters["@eqmt"].Value = (object)ml.cd_eqmt ?? DBNull.Value;
                         command.Parameters["@area"].Value = (object)ml.area ?? DBNull.Value;
                         command.Parameters["@aspect_ratio"].Value = (object)ml.aspect_ratio ?? DBNull.Value;
-                        command.Parameters["@temp_cool"].Value = (object)ml.temp_cool ?? DBNull.Value;
+                        command.Parameters["@temp_cool"].Value = 28;
                         command.Parameters["@pwr_eqmt"].Value = (object)ml.pwr_eqmt ?? DBNull.Value;
-                        command.Parameters["@temp_heat"].Value = (object)ml.temp_heat ?? DBNull.Value;
+                        command.Parameters["@temp_heat"].Value = 18;
                         command.Parameters["@level_light"].Value = (object)ml.level_light ?? DBNull.Value;
                         command.Parameters["@north_axis"].Value = north_axis ?? DBNull.Value;
                         command.Parameters["@occupancy"].Value = (object)ml.occupancy ?? DBNull.Value;
@@ -769,8 +769,8 @@ namespace UnrealViewerAPI.Controllers
                         command.Parameters["@u_roof"].Value = (object)ml.u_roof ?? DBNull.Value;
                         command.Parameters["@u_wall"].Value = (object)ml.u_wall ?? DBNull.Value;
                         command.Parameters["@u_window"].Value = (object)ml.u_window ?? DBNull.Value;
-                        command.Parameters["@hur_wday"].Value = (object)ml.hur_wday ?? DBNull.Value;
-                        command.Parameters["@hur_wend"].Value = (object)ml.hur_wend ?? DBNull.Value;
+                        command.Parameters["@hur_wday"].Value = 8;
+                        command.Parameters["@hur_wend"].Value = 0;
                         command.Parameters["@wwr"].Value = (object)ml.wwr ?? DBNull.Value;
                         command.Parameters["@effcy_cool"].Value = (object)ml.effcy_cool ?? DBNull.Value;
                         command.Parameters["@effcy_heat"].Value = (object)ml.effcy_heat ?? DBNull.Value;
