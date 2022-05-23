@@ -405,6 +405,8 @@ namespace UnrealViewerAPI.Controllers
         [Route("get-energyusage-avg")]
         public string GetEnergyUsageAvg(string area, string eqmt, string wday, string wend)
         {
+            string cdEqmt = eqmt == "EHP" ? "401" : "402";
+
             string query = 
                 $"SELECT " +
                     $"mnth, AVG(load_cool) as load_cool, AVG(load_heat) as load_heat, AVG(load_baseElec) as load_baseElec " +
@@ -417,7 +419,7 @@ namespace UnrealViewerAPI.Controllers
                     $"FROM " +
                         $"tbl_user_enter " +
                     $"WHERE " +
-                        $"area='{area}' AND cd_eqmt='{eqmt}' AND hur_wday={wday} AND hur_wend={wend}) " +
+                        $"area={area} AND cd_eqmt='{cdEqmt}' AND hur_wday={wday} AND hur_wend={wend}) " +
                 $"GROUP BY mnth";
 
             string dataSource = _configuration.GetConnectionString("PROD");
