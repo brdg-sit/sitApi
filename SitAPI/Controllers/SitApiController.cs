@@ -596,6 +596,100 @@ namespace UnrealViewerAPI.Controllers
                 return 0;
             }
         }
+
+        [HttpPost]
+        [Route("ml")]
+        public int PostML([FromBody] ML ml)
+        {
+            try
+            {
+                using (SqlConnection connection = new SqlConnection())
+                {
+                    connection.ConnectionString = _configuration.GetConnectionString("PROD");
+                    connection.Open();
+
+                    string query =
+                        $"INSERT INTO tbl_ml" +
+                        $"(id_etr, [year], eqmt, area, aspect_ratio, temp_cool, pwr_eqmt, temp_heat, level_light, north_axis, occupancy, shgc, u_floor, u_roof, u_wall, u_window, hur_wday, hur_wend, wwr, effcy_cool, effcy_heat) " +
+                        $"OUTPUT INSERTED.id " +
+                        $"VALUES" +
+                        $"(@id_etr, " +
+                        $"@year, " +
+                        $"@eqmt, " +
+                        $"@area, " +
+                        $"@aspect_ratio, " +
+                        $"@temp_cool, " +
+                        $"@pwr_eqmt, " +
+                        $"@temp_heat, " +
+                        $"@level_light, " +
+                        $"@north_axis, " +
+                        $"@occupancy, " +
+                        $"@shgc, " +
+                        $"@u_floor, " +
+                        $"@u_roof, " +
+                        $"@u_wall, " +
+                        $"@u_window, " +
+                        $"@hur_wday, " +
+                        $"@hur_wend, " +
+                        $"@wwr, " +
+                        $"@effcy_cool, " +
+                        $"@effcy_heat)";
+
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.Add("@id_etr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@year", SqlDbType.NVarChar);
+                        command.Parameters.Add("@eqmt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@area", SqlDbType.NVarChar);
+                        command.Parameters.Add("@aspect_ratio", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@pwr_eqmt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@level_light", SqlDbType.NVarChar);
+                        command.Parameters.Add("@north_axis", SqlDbType.NVarChar);
+                        command.Parameters.Add("@occupancy", SqlDbType.NVarChar);
+                        command.Parameters.Add("@shgc", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_floor", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_roof", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_wall", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_window", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wday", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wend", SqlDbType.NVarChar);
+                        command.Parameters.Add("@wwr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_heat", SqlDbType.NVarChar);
+
+                        command.Parameters["@id_etr"].Value = (object)ml.id_etr ?? DBNull.Value;
+                        command.Parameters["@year"].Value = (object)ml.year ?? DBNull.Value;
+                        command.Parameters["@eqmt"].Value = (object)ml.eqmt ?? DBNull.Value;
+                        command.Parameters["@area"].Value = (object)ml.area ?? DBNull.Value;
+                        command.Parameters["@aspect_ratio"].Value = (object)ml.aspect_ratio ?? DBNull.Value;
+                        command.Parameters["@temp_cool"].Value = (object)ml.temp_cool ?? DBNull.Value;
+                        command.Parameters["@pwr_eqmt"].Value = (object)ml.pwr_eqmt ?? DBNull.Value;
+                        command.Parameters["@temp_heat"].Value = (object)ml.temp_heat ?? DBNull.Value;
+                        command.Parameters["@level_light"].Value = (object)ml.level_light ?? DBNull.Value;
+                        command.Parameters["@north_axis"].Value = (object)ml.north_axis ?? DBNull.Value;
+                        command.Parameters["@occupancy"].Value = (object)ml.occupancy ?? DBNull.Value;
+                        command.Parameters["@shgc"].Value = (object)ml.shgc ?? DBNull.Value;
+                        command.Parameters["@u_floor"].Value = (object)ml.u_floor ?? DBNull.Value;
+                        command.Parameters["@u_roof"].Value = (object)ml.u_roof ?? DBNull.Value;
+                        command.Parameters["@u_wall"].Value = (object)ml.u_wall ?? DBNull.Value;
+                        command.Parameters["@u_window"].Value = (object)ml.u_window ?? DBNull.Value;
+                        command.Parameters["@hur_wday"].Value = (object)ml.hur_wday ?? DBNull.Value;
+                        command.Parameters["@hur_wend"].Value = (object)ml.hur_wend ?? DBNull.Value;
+                        command.Parameters["@wwr"].Value = (object)ml.wwr ?? DBNull.Value;
+                        command.Parameters["@effcy_cool"].Value = (object)ml.effcy_cool ?? DBNull.Value;
+                        command.Parameters["@effcy_heat"].Value = (object)ml.effcy_heat ?? DBNull.Value;
+
+                        return (int)command.ExecuteScalar();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
+        }
     }
 
     public class UserEnter
@@ -644,6 +738,7 @@ namespace UnrealViewerAPI.Controllers
         public dynamic elec_data { get; set; }
         public dynamic gas_data { get; set; }
     }
+
     public class EnergyUsage
     {
         public int id_etr { get; set; }
@@ -653,5 +748,34 @@ namespace UnrealViewerAPI.Controllers
         public dynamic elec_data { get; set; }
         public dynamic gas_data { get; set; }
         public bool is_ehp { get; set; }
+    }
+
+    public class ML
+    {
+        public int id { get; set; }
+        public int id_etr { get; set; }
+        public string eqmt { get; set; }
+        public int year { get; set; }
+        public int area { get; set; }
+        public float load_cool { get; set; }
+        public float load_heat { get; set; }
+        public float load_baseElec { get; set; }
+        public float aspect_ratio { get; set; }
+        public float temp_cool { get; set; }
+        public float pwr_eqmt { get; set; }
+        public float temp_heat { get; set; }
+        public float level_light { get; set; }
+        public float north_axis { get; set; }
+        public float occupancy { get; set; }
+        public float shgc { get; set; }
+        public float u_floor { get; set; }
+        public float u_roof { get; set; }
+        public float u_wall { get; set; }
+        public float u_window { get; set; }
+        public int hur_wday { get; set; }
+        public int hur_wend { get; set; }
+        public float wwr { get; set; }
+        public float effcy_cool { get; set; }
+        public float effcy_heat { get; set; }
     }
 }
