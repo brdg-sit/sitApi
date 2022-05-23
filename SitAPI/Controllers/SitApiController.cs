@@ -15,6 +15,7 @@ using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System.Globalization;
 using System.Data.SqlClient;
+using System.Web.Helpers;
 
 namespace UnrealViewerAPI.Controllers
 {
@@ -608,7 +609,7 @@ namespace UnrealViewerAPI.Controllers
 
         [HttpPost]
         [Route("ml")]
-        public int PostML([FromBody] ML ml)
+        public string PostML([FromBody] ML ml)
         {
             try
             {
@@ -648,6 +649,85 @@ namespace UnrealViewerAPI.Controllers
                         $"@wwr, " +
                         $"@effcy_cool, " +
                         $"@effcy_heat)";
+
+                    int id_ml = 0;
+                    using (SqlCommand command = new SqlCommand(query, connection))
+                    {
+                        command.Parameters.Add("@id_etr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@year", SqlDbType.NVarChar);
+                        command.Parameters.Add("@eqmt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@area", SqlDbType.NVarChar);
+                        command.Parameters.Add("@aspect_ratio", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@pwr_eqmt", SqlDbType.NVarChar);
+                        command.Parameters.Add("@temp_heat", SqlDbType.NVarChar);
+                        command.Parameters.Add("@level_light", SqlDbType.NVarChar);
+                        command.Parameters.Add("@north_axis", SqlDbType.NVarChar);
+                        command.Parameters.Add("@occupancy", SqlDbType.NVarChar);
+                        command.Parameters.Add("@shgc", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_floor", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_roof", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_wall", SqlDbType.NVarChar);
+                        command.Parameters.Add("@u_window", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wday", SqlDbType.NVarChar);
+                        command.Parameters.Add("@hur_wend", SqlDbType.NVarChar);
+                        command.Parameters.Add("@wwr", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_cool", SqlDbType.NVarChar);
+                        command.Parameters.Add("@effcy_heat", SqlDbType.NVarChar);
+
+                        command.Parameters["@id_etr"].Value = (object)ml.id_etr ?? DBNull.Value;
+                        command.Parameters["@year"].Value = (object)ml.year ?? DBNull.Value;
+                        command.Parameters["@eqmt"].Value = (object)ml.cd_eqmt ?? DBNull.Value;
+                        command.Parameters["@area"].Value = (object)ml.area ?? DBNull.Value;
+                        command.Parameters["@aspect_ratio"].Value = (object)ml.aspect_ratio ?? DBNull.Value;
+                        command.Parameters["@temp_cool"].Value = 28;
+                        command.Parameters["@pwr_eqmt"].Value = (object)ml.pwr_eqmt ?? DBNull.Value;
+                        command.Parameters["@temp_heat"].Value = 18;
+                        command.Parameters["@level_light"].Value = (object)ml.level_light ?? DBNull.Value;
+                        command.Parameters["@north_axis"].Value = north_axis ?? DBNull.Value;
+                        command.Parameters["@occupancy"].Value = (object)ml.occupancy ?? DBNull.Value;
+                        command.Parameters["@shgc"].Value = (object)ml.shgc ?? DBNull.Value;
+                        command.Parameters["@u_floor"].Value = (object)ml.u_floor ?? DBNull.Value;
+                        command.Parameters["@u_roof"].Value = (object)ml.u_roof ?? DBNull.Value;
+                        command.Parameters["@u_wall"].Value = (object)ml.u_wall ?? DBNull.Value;
+                        command.Parameters["@u_window"].Value = (object)ml.u_window ?? DBNull.Value;
+                        command.Parameters["@hur_wday"].Value = 8;
+                        command.Parameters["@hur_wend"].Value = 0;
+                        command.Parameters["@wwr"].Value = (object)ml.wwr ?? DBNull.Value;
+                        command.Parameters["@effcy_cool"].Value = (object)ml.effcy_cool ?? DBNull.Value;
+                        command.Parameters["@effcy_heat"].Value = (object)ml.effcy_heat ?? DBNull.Value;
+
+                        id_ml = (int)command.ExecuteScalar();
+                    }
+
+                    query =
+                        $"INSERT INTO tbl_ml_stdd" +
+                        $"(id_etr, [year], eqmt, area, aspect_ratio, temp_cool, pwr_eqmt, temp_heat, level_light, north_axis, occupancy, shgc, u_floor, u_roof, u_wall, u_window, hur_wday, hur_wend, wwr, effcy_cool, effcy_heat) " +
+                        $"OUTPUT INSERTED.id " +
+                        $"VALUES" +
+                        $"(@id_etr, " +
+                        $"@year, " +
+                        $"@eqmt, " +
+                        $"@area, " +
+                        $"@aspect_ratio, " +
+                        $"@temp_cool, " +
+                        $"@pwr_eqmt, " +
+                        $"@temp_heat, " +
+                        $"@level_light, " +
+                        $"@north_axis, " +
+                        $"@occupancy, " +
+                        $"@shgc, " +
+                        $"@u_floor, " +
+                        $"@u_roof, " +
+                        $"@u_wall, " +
+                        $"@u_window, " +
+                        $"@hur_wday, " +
+                        $"@hur_wend, " +
+                        $"@wwr, " +
+                        $"@effcy_cool, " +
+                        $"@effcy_heat)";
+
+                    int id_ml_stdd = 0;
 
                     using (SqlCommand command = new SqlCommand(query, connection))
                     {
@@ -695,13 +775,17 @@ namespace UnrealViewerAPI.Controllers
                         command.Parameters["@effcy_cool"].Value = (object)ml.effcy_cool ?? DBNull.Value;
                         command.Parameters["@effcy_heat"].Value = (object)ml.effcy_heat ?? DBNull.Value;
 
-                        return (int)command.ExecuteScalar();
+                        id_ml_stdd = (int)command.ExecuteScalar();
                     }
+
+                    var json = new { id_ml = id_ml, id_ml_stdd = id_ml_stdd };
+                    string jsonString = JsonConvert.SerializeObject(json);
+                    return jsonString;
                 }
             }
             catch (Exception ex)
             {
-                return 0;
+                return "";
             }
         }
     }
