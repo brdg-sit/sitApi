@@ -368,19 +368,25 @@ namespace UnrealViewerAPI.Controllers
                 // mlJson: 사용자입력값 예측 부분, cool, heat, baseElec 3번 실행
                 // mlStddJson: 일반사용형태 예측 부분, cool, heat, baseElec 3번 실행
                 // 총 6번 예측 실행
-                double mlStdd_load_cool = 0.9;
-                double mlStdd_load_heat = 0.9;
-                double mlStdd_load_baseElec = 0.9;
+                double mlStdd_load_cool = 0.9; // <-- 예측결과 넣기
+                double mlStdd_load_heat = 0.9; // <-- 예측결과 넣기
+                double mlStdd_load_baseElec = 0.9; // <-- 예측결과 넣기
 
-                double ml_load_cool = 1;
-                double ml_load_heat = 1;
-                double ml_load_baseElec = 1;
+                double ml_load_cool = 1; // <-- 예측결과 넣기
+                double ml_load_heat = 1; // <-- 예측결과 넣기
+                double ml_load_baseElec = 1; // <-- 예측결과 넣기
+                // ==================
+
+                // 예측결과 tbl_ml 테이블에 update
+                query = $"UPDATE tbl_ml SET load_cool = {ml_load_cool}, load_heat = {ml_load_heat}, load_baseElec = {ml_load_baseElec} WHERE id_etr = {id_etr};";
+                transaction.ExecuteNonQuery(query, dataSource);
                 // ==================
 
                 // 용도별 에너지 비율
                 double rate_load_cool = mlStdd_load_cool / ml_load_cool;
                 double rate_load_heat = mlStdd_load_heat / ml_load_heat;
                 double rate_load_baseElec = mlStdd_load_baseElec / ml_load_baseElec;
+                // ==================
 
                 query =
                     $"SELECT " +
