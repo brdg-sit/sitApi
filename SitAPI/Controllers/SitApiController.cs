@@ -603,12 +603,17 @@ namespace UnrealViewerAPI.Controllers
         {
             try
             {
+                string query = $"SELECT value FROM tbl_com_code WHERE code = '{(object)ml.cd_north_axis}'";
+                string dataSource = _configuration.GetConnectionString("PROD");
+                var dt = transaction.GetTableFromDB(query, dataSource);
+                var north_axis = dt.Rows[0]["value"];
+
                 using (SqlConnection connection = new SqlConnection())
                 {
                     connection.ConnectionString = _configuration.GetConnectionString("PROD");
                     connection.Open();
 
-                    string query =
+                    query =
                         $"INSERT INTO tbl_ml" +
                         $"(id_etr, [year], eqmt, area, aspect_ratio, temp_cool, pwr_eqmt, temp_heat, level_light, north_axis, occupancy, shgc, u_floor, u_roof, u_wall, u_window, hur_wday, hur_wend, wwr, effcy_cool, effcy_heat) " +
                         $"OUTPUT INSERTED.id " +
@@ -661,14 +666,14 @@ namespace UnrealViewerAPI.Controllers
 
                         command.Parameters["@id_etr"].Value = (object)ml.id_etr ?? DBNull.Value;
                         command.Parameters["@year"].Value = (object)ml.year ?? DBNull.Value;
-                        command.Parameters["@eqmt"].Value = (object)ml.eqmt ?? DBNull.Value;
+                        command.Parameters["@eqmt"].Value = (object)ml.cd_eqmt ?? DBNull.Value;
                         command.Parameters["@area"].Value = (object)ml.area ?? DBNull.Value;
                         command.Parameters["@aspect_ratio"].Value = (object)ml.aspect_ratio ?? DBNull.Value;
                         command.Parameters["@temp_cool"].Value = (object)ml.temp_cool ?? DBNull.Value;
                         command.Parameters["@pwr_eqmt"].Value = (object)ml.pwr_eqmt ?? DBNull.Value;
                         command.Parameters["@temp_heat"].Value = (object)ml.temp_heat ?? DBNull.Value;
                         command.Parameters["@level_light"].Value = (object)ml.level_light ?? DBNull.Value;
-                        command.Parameters["@north_axis"].Value = (object)ml.north_axis ?? DBNull.Value;
+                        command.Parameters["@north_axis"].Value = north_axis ?? DBNull.Value;
                         command.Parameters["@occupancy"].Value = (object)ml.occupancy ?? DBNull.Value;
                         command.Parameters["@shgc"].Value = (object)ml.shgc ?? DBNull.Value;
                         command.Parameters["@u_floor"].Value = (object)ml.u_floor ?? DBNull.Value;
@@ -752,9 +757,8 @@ namespace UnrealViewerAPI.Controllers
 
     public class ML
     {
-        public int id { get; set; }
         public int id_etr { get; set; }
-        public string eqmt { get; set; }
+        public int cd_eqmt { get; set; }
         public int year { get; set; }
         public int area { get; set; }
         public float load_cool { get; set; }
@@ -765,7 +769,7 @@ namespace UnrealViewerAPI.Controllers
         public float pwr_eqmt { get; set; }
         public float temp_heat { get; set; }
         public float level_light { get; set; }
-        public float north_axis { get; set; }
+        public int cd_north_axis { get; set; }
         public float occupancy { get; set; }
         public float shgc { get; set; }
         public float u_floor { get; set; }
