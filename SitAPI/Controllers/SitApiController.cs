@@ -439,7 +439,7 @@ namespace UnrealViewerAPI.Controllers
                     $"SUM(load_cool) as yr_load_cool, " +
                     $"SUM(load_heat) as yr_load_heat, " +
                     $"SUM(load_baseElec) as yr_load_baseElec, " +
-                    $"SUM(load_baseGas) as yr_load_baseGas, " +
+                    $"SUM(load_baseGas) as yr_load_baseGas " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                     $"WHERE " +
