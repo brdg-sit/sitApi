@@ -18,6 +18,7 @@ using System.Data.SqlClient;
 using System.Web.Helpers;
 using EC_API.Controllers;
 using EC_API.Models;
+using SitAPI.Controllers;
 
 namespace UnrealViewerAPI.Controllers
 {
@@ -27,6 +28,7 @@ namespace UnrealViewerAPI.Controllers
     {
         private readonly IConfiguration _configuration;
         private Transaction transaction = new Transaction();
+        private MLController mlController = new MLController();
 
         public Sit(IConfiguration configuration)
         {
@@ -401,30 +403,30 @@ namespace UnrealViewerAPI.Controllers
 
         [HttpGet]
         [Route("get-energyusage-ml")]
-        public string GetEnergyUsageML(string id_etr, string area, string eqmt)
+        public string GetEnergyUsageML(string id_etr)
         {
             try
             {
-                string cdEqmt = eqmt == "EHP" ? "401" : "402";
+                //string cdEqmt = eqmt == "EHP" ? "401" : "402";
 
-                string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0} AND area='{1}' AND eqmt='{2}'", id_etr, area, cdEqmt);
+                string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", id_etr);
                 string dataSource = _configuration.GetConnectionString("PROD");
-                string mlJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+                //string mlJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
 
-                query = string.Format("SELECT * FROM tbl_ml_stdd WHERE id_etr={0} AND area='{1}' AND eqmt='{2}'", id_etr, area, cdEqmt);
-                string mlStddJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+                string stdQuery = string.Format("SELECT * FROM tbl_ml_stdd WHERE id_etr={0}", id_etr);
+                //string mlStddJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
 
                 // ML 예측 ===========
                 // mlJson: 사용자입력값 예측 부분, cool, heat, baseElec 3번 실행
                 // mlStddJson: 일반사용형태 예측 부분, cool, heat, baseElec 3번 실행
                 // 총 6번 예측 실행
-                double mlStdd_load_cool = 0;
-                double mlStdd_load_heat = 0;
-                double mlStdd_load_baseElec = 0;
+                double mlStdd_load_cool = mlController.PredictLoadCool(stdQuery, dataSource);
+                double mlStdd_load_heat = mlController.PredictLoadHeat(stdQuery, dataSource);
+                double mlStdd_load_baseElec = mlController.PredictLoadBaseElec(stdQuery, dataSource);
 
-                double ml_load_cool = 0;
-                double ml_load_heat = 0;
-                double ml_load_baseElec = 0;
+                double ml_load_cool = mlController.PredictLoadCool(query, dataSource);
+                double ml_load_heat = mlController.PredictLoadHeat(query, dataSource);
+                double ml_load_baseElec = mlController.PredictLoadBaseElec(query, dataSource);
                 // ==================
 
                 // 용도별 에너지 비율
@@ -929,185 +931,7 @@ namespace UnrealViewerAPI.Controllers
             }
         }
 
-        //ML
-        [HttpPost]
-        [Route("predict-loadcool")]
-        public float PredictLoadCool([FromBody] ETR etr)
-        {
-            string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", etr.id_etr);
-            string dataSource = _configuration.GetConnectionString("PROD");
-
-            var dataTable = transaction.GetTableFromDB(query, dataSource);
-
-            if (dataTable.Rows.Count == 0)
-            {
-                return -1;
-            }
-
-            var row = dataTable.Rows[0];
-
-            var is_ehp = (row["eqmt"].ToString() == "401") ? true : false;
-
-            var area = row["area"].ToString();
-
-            var data = (from DataRow dr in dataTable.Rows
-                        select new LoadCool()
-                        {
-                            load_cool = 0,
-                            aspect_ratio = (float)Convert.ToDouble(dr["aspect_ratio"]),
-                            temp_cool = (float)Convert.ToDouble(dr["temp_cool"]),
-                            pwr_eqmt = (float)Convert.ToDouble(dr["pwr_eqmt"]),
-                            temp_heat = (float)Convert.ToDouble(dr["temp_heat"]),
-                            level_light = (float)Convert.ToDouble(dr["level_light"]),
-                            north_axis = (float)Convert.ToDouble(dr["north_axis"]),
-                            occupancy = (float)Convert.ToDouble(dr["occupancy"]),
-                            shgc = (float)Convert.ToDouble(dr["shgc"]),
-                            u_floor = (float)Convert.ToDouble(dr["u_floor"]),
-                            u_roof = (float)Convert.ToDouble(dr["u_roof"]),
-                            u_wall = (float)Convert.ToDouble(dr["u_wall"]),
-                            u_window = (float)Convert.ToDouble(dr["u_window"]),
-                            hur_wday = (float)Convert.ToDouble(dr["hur_wday"]),
-                            hur_wend = (float)Convert.ToDouble(dr["hur_wend"]),
-                            wwr = (float)Convert.ToDouble(dr["wwr"]),
-                            effcy_cool = (float)Convert.ToDouble(dr["effcy_cool"]),
-                            effcy_heat = (float)Convert.ToDouble(dr["effcy_heat"])
-                        }).ToList();
-
-
-            if (is_ehp)
-            {
-                var path = String.Format("ML/ehp_{0}_{1}.zip", "cool", area);
-                LoadCoolConsumption.LoadCoolModelPath = Path.GetFullPath(path);
-            }
-            else
-            {
-                var path = String.Format("ML/central_{0}_{1}.zip", "cool", area);
-                LoadCoolConsumption.LoadCoolModelPath = Path.GetFullPath(path);
-            }
-
-
-            var expectedLoadCool = LoadCoolConsumption.Predict(data.First()).Score;
-            return expectedLoadCool;
-        }
-
-        //ML
-        [HttpPost]
-        [Route("predict-loadheat")]
-        public float PredictLoadHeat([FromBody] ETR etr)
-        {
-            string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", etr.id_etr);
-            string dataSource = _configuration.GetConnectionString("PROD");
-
-            var dataTable = transaction.GetTableFromDB(query, dataSource);
-
-            if (dataTable.Rows.Count == 0)
-            {
-                return -1;
-            }
-
-            var row = dataTable.Rows[0];
-
-            var is_ehp = (row["eqmt"].ToString() == "401") ? true : false;
-
-            var area = row["area"].ToString();
-
-            var data = (from DataRow dr in dataTable.Rows
-                        select new LoadHeat()
-                        {
-                            load_heat = 0,
-                            aspect_ratio = (float)Convert.ToDouble(dr["aspect_ratio"]),
-                            temp_cool = (float)Convert.ToDouble(dr["temp_cool"]),
-                            pwr_eqmt = (float)Convert.ToDouble(dr["pwr_eqmt"]),
-                            temp_heat = (float)Convert.ToDouble(dr["temp_heat"]),
-                            level_light = (float)Convert.ToDouble(dr["level_light"]),
-                            north_axis = (float)Convert.ToDouble(dr["north_axis"]),
-                            occupancy = (float)Convert.ToDouble(dr["occupancy"]),
-                            shgc = (float)Convert.ToDouble(dr["shgc"]),
-                            u_floor = (float)Convert.ToDouble(dr["u_floor"]),
-                            u_roof = (float)Convert.ToDouble(dr["u_roof"]),
-                            u_wall = (float)Convert.ToDouble(dr["u_wall"]),
-                            u_window = (float)Convert.ToDouble(dr["u_window"]),
-                            hur_wday = (float)Convert.ToDouble(dr["hur_wday"]),
-                            hur_wend = (float)Convert.ToDouble(dr["hur_wend"]),
-                            wwr = (float)Convert.ToDouble(dr["wwr"]),
-                            effcy_cool = (float)Convert.ToDouble(dr["effcy_cool"]),
-                            effcy_heat = (float)Convert.ToDouble(dr["effcy_heat"])
-                        }).ToList();
-
-
-            if (is_ehp)
-            {
-                var path = String.Format("ML/ehp_{0}_{1}.zip", "heat", area);
-                LoadHeatConsumption.LoadHeatModelPath = Path.GetFullPath(path);
-            }
-            else
-            {
-                var path = String.Format("ML/central_{0}_{1}.zip", "heat", area);
-                LoadHeatConsumption.LoadHeatModelPath = Path.GetFullPath(path);
-            }
-
-            var expectedLoadHeat = LoadHeatConsumption.Predict(data.First()).Score;
-            return expectedLoadHeat;
-        }
-
-        //ML
-        [HttpPost]
-        [Route("predict-loadbaseelec")]
-        public float PredictLoadBaseElec([FromBody] ETR etr)
-        {
-            string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", etr.id_etr);
-            string dataSource = _configuration.GetConnectionString("PROD");
-
-            var dataTable = transaction.GetTableFromDB(query, dataSource);
-
-            if (dataTable.Rows.Count == 0)
-            {
-                return -1;
-            }
-
-            var row = dataTable.Rows[0];
-
-            var is_ehp = (row["eqmt"].ToString() == "401") ? true : false;
-
-            var area = row["area"].ToString();
-
-            var data = (from DataRow dr in dataTable.Rows
-                        select new LoadBaseElec()
-                        {
-                            load_baseElec = 0,
-                            aspect_ratio = (float)Convert.ToDouble(dr["aspect_ratio"]),
-                            temp_cool = (float)Convert.ToDouble(dr["temp_cool"]),
-                            pwr_eqmt = (float)Convert.ToDouble(dr["pwr_eqmt"]),
-                            temp_heat = (float)Convert.ToDouble(dr["temp_heat"]),
-                            level_light = (float)Convert.ToDouble(dr["level_light"]),
-                            north_axis = (float)Convert.ToDouble(dr["north_axis"]),
-                            occupancy = (float)Convert.ToDouble(dr["occupancy"]),
-                            shgc = (float)Convert.ToDouble(dr["shgc"]),
-                            u_floor = (float)Convert.ToDouble(dr["u_floor"]),
-                            u_roof = (float)Convert.ToDouble(dr["u_roof"]),
-                            u_wall = (float)Convert.ToDouble(dr["u_wall"]),
-                            u_window = (float)Convert.ToDouble(dr["u_window"]),
-                            hur_wday = (float)Convert.ToDouble(dr["hur_wday"]),
-                            hur_wend = (float)Convert.ToDouble(dr["hur_wend"]),
-                            wwr = (float)Convert.ToDouble(dr["wwr"]),
-                            effcy_cool = (float)Convert.ToDouble(dr["effcy_cool"]),
-                            effcy_heat = (float)Convert.ToDouble(dr["effcy_heat"])
-                        }).ToList();
-
-            if (is_ehp)
-            {
-                var path = String.Format("ML/ehp_{0}_{1}.zip", "elec", area);
-                LoadBaseElecConsumption.LoadBaseElecModelPath = Path.GetFullPath(path);
-            }
-            else
-            {
-                var path = String.Format("ML/central_{0}_{1}.zip", "elec", area);
-                LoadBaseElecConsumption.LoadBaseElecModelPath = Path.GetFullPath(path);
-            }
-
-            var expectedLoadBaseElec = LoadBaseElecConsumption.Predict(data.First()).Score;
-            return expectedLoadBaseElec;
-        }
+        
     }
 
     public class ETR
