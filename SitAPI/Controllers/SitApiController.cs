@@ -356,15 +356,85 @@ namespace UnrealViewerAPI.Controllers
         [Route("get-energyusage")]
         public string GetEnergyUsage(string id_etr)
         {
-            string query =
-                // 월간 에너지
+            string dataSource = _configuration.GetConnectionString("PROD");
+
+            string query = $"SELECT area, cd_eqmt, hur_wday, hur_wend FROM tbl_user_enter WHERE id = {id_etr}";
+            var dt = transaction.GetTableFromDB(query, dataSource);
+            var area = dt.Rows[0]["area"];
+            var cd_eqmt = dt.Rows[0]["cd_eqmt"];
+            var hur_wday = dt.Rows[0]["hur_wday"];
+            var hur_wend = dt.Rows[0]["hur_wend"];
+
+            //string mlJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+            //string mlStddJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+
+            // ML 예측 ===========
+            // mlJson: 사용자입력값 예측 부분, cool, heat, baseElec 3번 실행
+            // mlStddJson: 일반사용형태 예측 부분, cool, heat, baseElec 3번 실행
+            // 총 6번 예측 실행
+            query = $"SELECT * FROM tbl_ml_stdd WHERE id_etr={id_etr}";
+            double mlStdd_load_cool = mlController.PredictLoadCool(query, dataSource);
+            double mlStdd_load_heat = mlController.PredictLoadHeat(query, dataSource);
+            double mlStdd_load_baseElec = mlController.PredictLoadBaseElec(query, dataSource);
+
+            query = $"SELECT * FROM tbl_ml WHERE id_etr={id_etr}";
+            double ml_load_cool = mlController.PredictLoadCool(query, dataSource);
+            double ml_load_heat = mlController.PredictLoadHeat(query, dataSource);
+            double ml_load_baseElec = mlController.PredictLoadBaseElec(query, dataSource);
+            // ==================
+
+            // 용도별 에너지 비율
+            double rate_load_cool = mlStdd_load_cool / ml_load_cool;
+            double rate_load_heat = mlStdd_load_heat / ml_load_heat;
+            double rate_load_baseElec = mlStdd_load_baseElec / ml_load_baseElec;
+
+            //query =
+            //    $"SELECT " +
+            //        $"mnth, " +
+            //        $"(load_cool * {rate_load_cool}) as load_cool, " +
+            //        $"(load_heat * {rate_load_heat}) as load_heat, " +
+            //        $"(load_baseElec * {rate_load_baseElec}) as load_baseElec " +
+            //    $"FROM " +
+            //        $"tbl_load_energy_usg " +
+            //    $"WHERE " +
+            //        $"id_etr = {id_etr} AND is_sep = 1;" +
+
+            query =
+                // 월별 사용자입력 에너지
                 $"SELECT " +
                     $"* " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 연간 에너지
+                // 월별 일반사용형태 에너지
+                $"SELECT " +
+                    $"mnth, " +
+                    $"(load_cool * {rate_load_cool}) as load_cool, " +
+                    $"(load_heat * {rate_load_heat}) as load_heat, " +
+                    $"(load_baseElec * {rate_load_baseElec}) as load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr = {id_etr} AND is_sep = 1; " +
+                // 월별 유사사례 평균치 에너지
+                $"SELECT " +
+                    $"mnth, " +
+                    $"AVG(load_cool) as load_cool, " +
+                    $"AVG(load_heat) as load_heat, " +
+                    $"AVG(load_baseElec) as load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr in " +
+                    $"(SELECT " +
+                        $"id " +
+                    $"FROM " +
+                        $"tbl_user_enter " +
+                    $"WHERE " +
+                        $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
+                $"GROUP BY mnth; " +
+                // 연간 사용자입력 에너지
                 $"SELECT " +
                     $"SUM(load_cool) as yr_load_cool, " +
                     $"SUM(load_heat) as yr_load_heat, " +
@@ -373,7 +443,7 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                     $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 연간 CO2
+                // 연간 사용자입력 CO2
                 $"DECLARE @cvtHeat FLOAT, @cvtCool FLOAT, @cvtBC FLOAT " +
                 $"IF((SELECT cd_eqmt FROM tbl_user_enter WHERE id = {id_etr}) = 401) " +
                     $"BEGIN " +
@@ -388,16 +458,24 @@ namespace UnrealViewerAPI.Controllers
                         $"SET @cvtBC = 0.00046 " +
                     $"END " +
                 $"SELECT " +
-                    $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_load_cool,  " +
-                    $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_load_heat,  " +
-                    $"ROUND(SUM(load_baseElec) * @cvtBC, 2) as yr_load_baseElec " +
+                    $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_co2_cool,  " +
+                    $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_co2_heat,  " +
+                    $"ROUND(SUM(load_baseElec) * @cvtBC, 2) as yr_co2_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE  " +
-                    $"id_etr = {id_etr} AND is_sep = 1;";
+                    $"id_etr = {id_etr} AND is_sep = 1; " +
+                // 연간 일반사용형태 CO2
+                $"SELECT " +
+                    $"ROUND(SUM(load_cool * {rate_load_cool}) * @cvtCool, 2) as yr_co2_cool, " +
+                    $"ROUND(SUM(load_cool * {rate_load_heat}) * @cvtHeat, 2) as yr_co2_heat, " +
+                    $"ROUND(SUM(load_cool * {rate_load_baseElec}) * @cvtBC, 2) as yr_co2_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr = {id_etr} AND is_sep = 1; ";
 
             //query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep=1", id_etr);
-            string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTablesFromDB(query, dataSource));
         }
 
@@ -409,8 +487,8 @@ namespace UnrealViewerAPI.Controllers
             {
                 //string cdEqmt = eqmt == "EHP" ? "401" : "402";
 
-                string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", id_etr);
                 string dataSource = _configuration.GetConnectionString("PROD");
+                string query = string.Format("SELECT * FROM tbl_ml WHERE id_etr={0}", id_etr);
                 //string mlJson = JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
 
                 string stdQuery = string.Format("SELECT * FROM tbl_ml_stdd WHERE id_etr={0}", id_etr);
@@ -473,7 +551,7 @@ namespace UnrealViewerAPI.Controllers
                         $"tbl_user_enter " +
                     $"WHERE " +
                         $"area='{area}' AND cd_eqmt='{eqmt}' AND hur_wday={wday} AND hur_wend={wend}) " +
-                $"GROUP BY mnth";
+                $"GROUP BY mnth; ";
 
             string dataSource = _configuration.GetConnectionString("PROD");
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
