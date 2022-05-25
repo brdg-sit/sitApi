@@ -434,6 +434,23 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
                 $"GROUP BY mnth; " +
+                // 월별 유사사례 평균치 CO2
+                $"SELECT " +
+                    $"mnth, " +
+                    $"AVG(load_cool) * {rate_load_cool} as co2d_cool, " +
+                    $"AVG(load_heat) * {rate_load_heat} as co2_heat, " +
+                    $"AVG(load_baseElec) * {rate_load_baseElec} as co2_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr in " +
+                    $"(SELECT " +
+                        $"id " +
+                    $"FROM " +
+                        $"tbl_user_enter " +
+                    $"WHERE " +
+                        $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
+                $"GROUP BY mnth; " +
                 // 연간 사용자입력 에너지
                 $"SELECT " +
                     $"SUM(load_cool) as yr_load_cool, " +
