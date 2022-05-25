@@ -438,12 +438,21 @@ namespace UnrealViewerAPI.Controllers
                 $"SELECT " +
                     $"SUM(load_cool) as yr_load_cool, " +
                     $"SUM(load_heat) as yr_load_heat, " +
-                    $"SUM(load_baseElec) as yr_load_baseElec " +
+                    $"SUM(load_baseElec) as yr_load_baseElec, " +
+                    $"SUM(load_baseGas) as yr_load_baseGas, " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                     $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 연간 사용자입력 CO2
+                // 연간 일반사용형태 에너지
+                $"SELECT " +
+                    $"ROUND(SUM(load_cool * {rate_load_cool}), 2) as load_cool, " +
+                    $"ROUND(SUM(load_heat * {rate_load_heat}), 2) as load_heat, " +
+                    $"ROUND(SUM(load_baseElec * {rate_load_baseElec}), 2) as load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr = {id_etr} AND is_sep = 1; " +
                 $"DECLARE @cvtHeat FLOAT, @cvtCool FLOAT, @cvtBC FLOAT " +
                 $"IF((SELECT cd_eqmt FROM tbl_user_enter WHERE id = {id_etr}) = 401) " +
                     $"BEGIN " +
@@ -457,6 +466,7 @@ namespace UnrealViewerAPI.Controllers
                         $"SET @cvtCool = 0.000207 " +
                         $"SET @cvtBC = 0.00046 " +
                     $"END " +
+                // 연간 사용자입력 CO2
                 $"SELECT " +
                     $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_co2_cool,  " +
                     $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_co2_heat,  " +
