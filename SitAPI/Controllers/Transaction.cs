@@ -24,6 +24,32 @@ namespace UnrealViewerAPI.Controllers
 
             return table;
         }
+
+        public List<DataTable> GetTablesFromDB(string query, string dataSource)
+        {
+            List<DataTable> dataTables = new();
+
+            using (SqlConnection sqlConnection = new SqlConnection(dataSource))
+            {
+                sqlConnection.Open();
+                using (SqlCommand sqlCommand = new SqlCommand(query, sqlConnection))
+                {
+                    using IDataReader dataReader = sqlCommand.ExecuteReader();
+                    do
+                    {
+                        DataTable dataTable = new();
+                        dataTable.Load(dataReader);
+                        dataTables.Add(dataTable);
+                    }
+                    while (!dataReader.IsClosed);
+
+                    sqlConnection.Close();
+                }
+            }
+
+            return dataTables;
+        }
+
         public Task<DataSet> GetDataSetAsync(string sConnectionString, string sSQL, int cur, int page)
         {
             return Task.Run(() =>

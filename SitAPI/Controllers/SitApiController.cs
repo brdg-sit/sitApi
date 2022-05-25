@@ -322,6 +322,15 @@ namespace UnrealViewerAPI.Controllers
         }
 
         [HttpGet]
+        [Route("defaults2")]
+        public string GetDefaults2()
+        {
+            string query = @"SELECT * FROM tbl_user_enter_def; SELECT TOP 1 * FROM tbl_user_enter; ";
+            string dataSource = _configuration.GetConnectionString("PROD");
+            return JsonConvert.SerializeObject(transaction.GetTablesFromDB(query, dataSource));
+        }
+
+        [HttpGet]
         [Route("codes")]
         public string GetCodes()
         {
@@ -343,10 +352,49 @@ namespace UnrealViewerAPI.Controllers
         [Route("get-energyusage")]
         public string GetEnergyUsage(string id_etr)
         {
-            // 1: 분리분산
-            string query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep=1", id_etr);
+            string query =
+                // 월간 에너지
+                $"SELECT " +
+                    $"* " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr = {id_etr} AND is_sep = 1; " +
+                // 연간 에너지
+                $"SELECT " +
+                    $"SUM(load_cool) as yr_load_cool, " +
+                    $"SUM(load_heat) as yr_load_heat, " +
+                    $"SUM(load_baseElec) as yr_load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                    $"WHERE " +
+                    $"id_etr = {id_etr} AND is_sep = 1; " +
+                // 연간 CO2
+                $"DECLARE @cvtHeat FLOAT, @cvtCool FLOAT, @cvtBC FLOAT " +
+                $"IF((SELECT cd_eqmt FROM tbl_user_enter WHERE id = {id_etr}) = 401) " +
+                    $"BEGIN " +
+                        $"SET @cvtHeat = 0.00046 " +
+                        $"SET @cvtCool = 0.00046 " +
+                        $"SET @cvtBC = 0.00046 " +
+                    $"END " +
+                $"ELSE " +
+                    $"BEGIN " +
+                        $"SET @cvtHeat = 0.000207 " +
+                        $"SET @cvtCool = 0.000207 " +
+                        $"SET @cvtBC = 0.00046 " +
+                    $"END " +
+                $"SELECT " +
+                    $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_load_cool,  " +
+                    $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_load_heat,  " +
+                    $"ROUND(SUM(load_baseElec) * @cvtBC, 2) as yr_load_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE  " +
+                    $"id_etr = {id_etr} AND is_sep = 1;";
+
+            //query = string.Format("SELECT * FROM tbl_load_energy_usg WHERE id_etr={0} AND is_sep=1", id_etr);
             string dataSource = _configuration.GetConnectionString("PROD");
-            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+            return JsonConvert.SerializeObject(transaction.GetTablesFromDB(query, dataSource));
         }
 
         [HttpGet]
@@ -415,7 +463,10 @@ namespace UnrealViewerAPI.Controllers
 
             string query = 
                 $"SELECT " +
-                    $"mnth, AVG(load_cool) as load_cool, AVG(load_heat) as load_heat, AVG(load_baseElec) as load_baseElec " +
+                    $"mnth, " +
+                    $"AVG(load_cool) as load_cool, " +
+                    $"AVG(load_heat) as load_heat, " +
+                    $"AVG(load_baseElec) as load_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
@@ -493,6 +544,16 @@ namespace UnrealViewerAPI.Controllers
             var gasJson = Convert.ToString(energyUsage.gas_data);
             var gasDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(gasJson);
 
+            double gasConvert = 0;
+            if (energyUsage.unit_gas == 201)
+            {
+                gasConvert = 0.2777777778;
+            }
+            else
+            {
+                gasConvert = 10.55;
+            }
+
             Dictionary<string, int> energyDict;
 
             if (energyUsage.is_ehp)
@@ -505,9 +566,10 @@ namespace UnrealViewerAPI.Controllers
             }
             else
             {
+
                 foreach (var gas in gasDict)
                 {
-                    gasDict[gas.Key] = gas.Value - energyUsage.base_ec;
+                    gasDict[gas.Key] = (gas.Value - energyUsage.base_ec) * gasConvert;
                 }
                 energyDict = gasDict;
             }
@@ -557,15 +619,15 @@ namespace UnrealViewerAPI.Controllers
 
                             if (energyUsage.is_ehp)
                             {
-                                command.Parameters["@load_baseElec"].Value = (object)energyUsage.base_ec ?? DBNull.Value;
-                                command.Parameters["@load_baseGas"].Value = gasDict[energy.Key];
+                                command.Parameters["@load_baseElec"].Value = energyUsage.base_ec;
+                                command.Parameters["@load_baseGas"].Value = gasDict[energy.Key] * gasConvert;
                                 command.Parameters["@unit_cool"].Value = (object)energyUsage.unit_elec ?? DBNull.Value;
                                 command.Parameters["@unit_heat"].Value = (object)energyUsage.unit_elec ?? DBNull.Value;
                             }
                             else
                             {
                                 command.Parameters["@load_baseElec"].Value = elecDict[energy.Key];
-                                command.Parameters["@load_baseGas"].Value = (object)energyUsage.base_ec ?? DBNull.Value;
+                                command.Parameters["@load_baseGas"].Value = energyUsage.base_ec * gasConvert;
                                 command.Parameters["@unit_cool"].Value = (object)energyUsage.unit_gas ?? DBNull.Value;
                                 command.Parameters["@unit_heat"].Value = (object)energyUsage.unit_gas ?? DBNull.Value;
                             }
