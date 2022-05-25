@@ -446,9 +446,9 @@ namespace UnrealViewerAPI.Controllers
                     $"id_etr = {id_etr} AND is_sep = 1; " +
                 // 연간 일반사용형태 에너지
                 $"SELECT " +
-                    $"ROUND(SUM(load_cool * {rate_load_cool}), 2) as load_cool, " +
-                    $"ROUND(SUM(load_heat * {rate_load_heat}), 2) as load_heat, " +
-                    $"ROUND(SUM(load_baseElec * {rate_load_baseElec}), 2) as load_baseElec " +
+                    $"ROUND(SUM(load_cool * {rate_load_cool}), 2) as yr_load_cool, " +
+                    $"ROUND(SUM(load_heat * {rate_load_heat}), 2) as yr_load_heat, " +
+                    $"ROUND(SUM(load_baseElec * {rate_load_baseElec}), 2) as yr_load_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
