@@ -437,7 +437,7 @@ namespace UnrealViewerAPI.Controllers
                 // 월별 유사사례 평균치 CO2
                 $"SELECT " +
                     $"mnth, " +
-                    $"AVG(load_cool) * {rate_load_cool} as co2d_cool, " +
+                    $"AVG(load_cool) * {rate_load_cool} as co2_cool, " +
                     $"AVG(load_heat) * {rate_load_heat} as co2_heat, " +
                     $"AVG(load_baseElec) * {rate_load_baseElec} as co2_baseElec " +
                 $"FROM " +
