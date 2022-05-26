@@ -353,6 +353,15 @@ namespace UnrealViewerAPI.Controllers
         }
 
         [HttpGet]
+        [Route("get-energytyp")]
+        public string GetEnergyType(string id_etr)
+        {
+            string dataSource = _configuration.GetConnectionString("PROD");
+            string query = $"SELECT * FROM tbl_load_energy_typ WHERE id_etr=" + id_etr;
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
         [Route("get-energyusage")]
         public string GetEnergyUsage(string id_etr)
         {
