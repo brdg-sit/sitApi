@@ -400,14 +400,14 @@ namespace UnrealViewerAPI.Controllers
             //        $"id_etr = {id_etr} AND is_sep = 1;" +
 
             query =
-                // 월별 사용자입력 에너지
+                // 월별 사용자입력 에너지 (0)
                 $"SELECT " +
                     $"* " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 월별 일반사용형태 에너지
+                // 월별 일반사용형태 에너지 (1)
                 $"SELECT " +
                     $"mnth, " +
                     $"(load_cool * {rate_load_cool}) as load_cool, " +
@@ -417,7 +417,7 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 월별 유사사례 평균치 에너지
+                // 월별 유사사례 평균치 에너지 (2)
                 $"SELECT " +
                     $"mnth, " +
                     $"AVG(load_cool) as load_cool, " +
@@ -434,24 +434,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                         $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
                 $"GROUP BY mnth; " +
-                // 월별 유사사례 평균치 CO2
-                $"SELECT " +
-                    $"mnth, " +
-                    $"AVG(load_cool) * {rate_load_cool} as co2_cool, " +
-                    $"AVG(load_heat) * {rate_load_heat} as co2_heat, " +
-                    $"AVG(load_baseElec) * {rate_load_baseElec} as co2_baseElec " +
-                $"FROM " +
-                    $"tbl_load_energy_usg " +
-                $"WHERE " +
-                    $"id_etr in " +
-                    $"(SELECT " +
-                        $"id " +
-                    $"FROM " +
-                        $"tbl_user_enter " +
-                    $"WHERE " +
-                        $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
-                $"GROUP BY mnth; " +
-                // 연간 사용자입력 에너지
+                // 연간 사용자입력 에너지 (3)
                 $"SELECT " +
                     $"SUM(load_cool) as yr_load_cool, " +
                     $"SUM(load_heat) as yr_load_heat, " +
@@ -461,7 +444,7 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                     $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 연간 일반사용형태 에너지
+                // 연간 일반사용형태 에너지 (4)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool * {rate_load_cool}), 2) as yr_load_cool, " +
                     $"ROUND(SUM(load_heat * {rate_load_heat}), 2) as yr_load_heat, " +
@@ -483,7 +466,24 @@ namespace UnrealViewerAPI.Controllers
                         $"SET @cvtCool = 0.000207 " +
                         $"SET @cvtBC = 0.00046 " +
                     $"END " +
-                // 연간 사용자입력 CO2
+                // 월별 유사사례 평균치 CO2 (5)
+                $"SELECT " +
+                    $"mnth, " +
+                    $"ROUND(AVG(load_cool)  * @cvtCool, 2) as co2_cool, " +
+                    $"ROUND(AVG(load_heat)  * @cvtHeat, 2) as co2_heat, " +
+                    $"ROUND(AVG(load_baseElec)  * @cvtBC, 2) as co2_baseElec " +
+                $"FROM " +
+                    $"tbl_load_energy_usg " +
+                $"WHERE " +
+                    $"id_etr in " +
+                    $"(SELECT " +
+                        $"id " +
+                    $"FROM " +
+                        $"tbl_user_enter " +
+                    $"WHERE " +
+                        $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
+                $"GROUP BY mnth; " +
+                // 연간 사용자입력 CO2 (6)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_co2_cool,  " +
                     $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_co2_heat,  " +
@@ -492,7 +492,7 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                 $"WHERE  " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
-                // 연간 일반사용형태 CO2
+                // 연간 일반사용형태 CO2 (7)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool * {rate_load_cool}) * @cvtCool, 2) as yr_co2_cool, " +
                     $"ROUND(SUM(load_cool * {rate_load_heat}) * @cvtHeat, 2) as yr_co2_heat, " +
