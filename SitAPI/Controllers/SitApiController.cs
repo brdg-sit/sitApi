@@ -469,9 +469,9 @@ namespace UnrealViewerAPI.Controllers
                 // 월별 유사사례 평균치 CO2 (5)
                 $"SELECT " +
                     $"mnth, " +
-                    $"ROUND(AVG(load_cool)  * @cvtCool, 2) as co2_cool, " +
-                    $"ROUND(AVG(load_heat)  * @cvtHeat, 2) as co2_heat, " +
-                    $"ROUND(AVG(load_baseElec)  * @cvtBC, 2) as co2_baseElec " +
+                    $"ROUND(AVG(load_cool)  * @cvtCool, 4) as co2_cool, " +
+                    $"ROUND(AVG(load_heat)  * @cvtHeat, 4) as co2_heat, " +
+                    $"ROUND(AVG(load_baseElec)  * @cvtBC, 4) as co2_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
@@ -485,18 +485,18 @@ namespace UnrealViewerAPI.Controllers
                 $"GROUP BY mnth; " +
                 // 연간 사용자입력 CO2 (6)
                 $"SELECT " +
-                    $"ROUND(SUM(load_cool) * @cvtCool, 2) as yr_co2_cool,  " +
-                    $"ROUND(SUM(load_heat) * @cvtHeat, 2) as yr_co2_heat,  " +
-                    $"ROUND(SUM(load_baseElec) * @cvtBC, 2) as yr_co2_baseElec " +
+                    $"ROUND(SUM(load_cool) * @cvtCool, 4) as yr_co2_cool,  " +
+                    $"ROUND(SUM(load_heat) * @cvtHeat, 4) as yr_co2_heat,  " +
+                    $"ROUND(SUM(load_baseElec) * @cvtBC, 4) as yr_co2_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE  " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
                 // 연간 일반사용형태 CO2 (7)
                 $"SELECT " +
-                    $"ROUND(SUM(load_cool * {rate_load_cool}) * @cvtCool, 2) as yr_co2_cool, " +
-                    $"ROUND(SUM(load_cool * {rate_load_heat}) * @cvtHeat, 2) as yr_co2_heat, " +
-                    $"ROUND(SUM(load_cool * {rate_load_baseElec}) * @cvtBC, 2) as yr_co2_baseElec " +
+                    $"ROUND(SUM(load_cool * {rate_load_cool}) * @cvtCool, 4) as yr_co2_cool, " +
+                    $"ROUND(SUM(load_cool * {rate_load_heat}) * @cvtHeat, 4) as yr_co2_heat, " +
+                    $"ROUND(SUM(load_cool * {rate_load_baseElec}) * @cvtBC, 4) as yr_co2_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
