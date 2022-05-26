@@ -640,10 +640,10 @@ namespace UnrealViewerAPI.Controllers
         public void PostEnergyUsage([FromBody] EnergyUsage energyUsage)
         {
             var elecJson = Convert.ToString(energyUsage.elec_data);
-            var elecDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(elecJson);
+            var elecDict = JsonConvert.DeserializeObject<Dictionary<string, double>>(elecJson);
 
             var gasJson = Convert.ToString(energyUsage.gas_data);
-            var gasDict = JsonConvert.DeserializeObject<Dictionary<string, int>>(gasJson);
+            var gasDict = JsonConvert.DeserializeObject<Dictionary<string, double>>(gasJson);
 
             double gasConvert = 0;
             if (energyUsage.unit_gas == 201)
@@ -655,7 +655,7 @@ namespace UnrealViewerAPI.Controllers
                 gasConvert = 10.55;
             }
 
-            Dictionary<string, int> energyDict;
+            Dictionary<string, double> energyDict;
 
             if (energyUsage.is_ehp)
             {
