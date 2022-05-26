@@ -860,8 +860,14 @@ namespace UnrealViewerAPI.Controllers
         {
             try
             {
-                string query = $"SELECT value FROM tbl_com_code WHERE code = '{(object)ml.cd_north_axis}'";
                 string dataSource = _configuration.GetConnectionString("PROD");
+
+                string query = $"SELECT * FROM tbl_value_range";
+                var dtMinMax = transaction.GetTableFromDB(query, dataSource);
+
+                ml.SetValueRange(dtMinMax);
+
+                query = $"SELECT value FROM tbl_com_code WHERE code = '{(object)ml.cd_north_axis}'";
                 var dt = transaction.GetTableFromDB(query, dataSource);
                 var north_axis = dt.Rows[0]["value"];
 
@@ -1112,21 +1118,66 @@ namespace UnrealViewerAPI.Controllers
         public float load_heat { get; set; }
         public float load_baseElec { get; set; }
         public float aspect_ratio { get; set; }
-        public float temp_cool { get; set; }
-        public float pwr_eqmt { get; set; }
-        public float temp_heat { get; set; }
-        public float level_light { get; set; }
+        public float temp_cool { get; set; }//
+        public float pwr_eqmt { get; set; }//
+        public float temp_heat { get; set; }//
+        public float level_light { get; set; }//
         public int cd_north_axis { get; set; }
-        public float occupancy { get; set; }
-        public float shgc { get; set; }
-        public float u_floor { get; set; }
-        public float u_roof { get; set; }
-        public float u_wall { get; set; }
-        public float u_window { get; set; }
+        public float occupancy { get; set; }//
+        public float shgc { get; set; }//
+        public float u_floor { get; set; }//
+        public float u_roof { get; set; }//
+        public float u_wall { get; set; }//
+        public float u_window { get; set; }//
         public int hur_wday { get; set; }
         public int hur_wend { get; set; }
         public float wwr { get; set; }
-        public float effcy_cool { get; set; }
-        public float effcy_heat { get; set; }
+        public float effcy_cool { get; set; }//
+        public float effcy_heat { get; set; }//
+
+        public void SetValueRange(DataTable dt)
+        {
+            temp_cool = SetMinMax(temp_cool, "temp_cool", dt);
+            pwr_eqmt = SetMinMax(pwr_eqmt, "pwr_eqmt", dt);
+            temp_heat = SetMinMax(temp_heat, "temp_heat", dt);
+            level_light = SetMinMax(level_light, "level_light", dt);
+            occupancy = SetMinMax(occupancy, "occupancy", dt);
+            shgc = SetMinMax(shgc, "shgc", dt);
+            u_floor = SetMinMax(u_floor, "u_floor", dt);
+            u_roof = SetMinMax(u_roof, "u_roof", dt);
+            u_wall = SetMinMax(u_wall, "u_wall", dt);
+            u_window = SetMinMax(u_window, "u_window", dt);
+
+            if (cd_eqmt == 401)
+            {
+                effcy_cool = SetMinMax(effcy_cool, "effcy_cool_ehp", dt);
+                effcy_heat = SetMinMax(effcy_heat, "effcy_heat_ehp", dt);
+            }
+            else
+            {
+                effcy_cool = SetMinMax(effcy_cool, "effcy_cool_ctr", dt);
+                effcy_heat = SetMinMax(effcy_heat, "effcy_heat_ctr", dt);
+            }
+        }
+        private float SetMinMax(float value, string name, DataTable dt)
+        {
+            string expression = $"name = '{name}'";
+            DataRow? dtRow = dt.Select(expression).FirstOrDefault();
+
+            double min = Convert.ToDouble(dtRow?["min_val"]);
+            double max = Convert.ToDouble(dtRow?["max_val"]);
+
+            float val2 = value;
+            if (value > max)
+            {
+                val2 = (float)max;
+            }
+            else if (value < min)
+            {
+                val2 = (float)min;
+            }
+
+            return val2;
+        }
     }
 }
