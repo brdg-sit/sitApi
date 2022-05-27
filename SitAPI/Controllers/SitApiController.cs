@@ -593,6 +593,15 @@ namespace UnrealViewerAPI.Controllers
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 
+        [HttpGet]
+        [Route("get-userenter")]
+        public string GetUserEnter(string id_etr)
+        {
+            string dataSource = _configuration.GetConnectionString("PROD");
+            string query = $"SELECT * FROM tbl_user_enter WHERE id_etr=" + id_etr;
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
         [HttpPost]
         [Route("energytyp")]
         public void PostEnergyType([FromBody] EnergyType energyType)
