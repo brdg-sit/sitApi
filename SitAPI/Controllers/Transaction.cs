@@ -24,7 +24,6 @@ namespace UnrealViewerAPI.Controllers
 
             return table;
         }
-
         public List<DataTable> GetTablesFromDB(string query, string dataSource)
         {
             List<DataTable> dataTables = new();
@@ -49,7 +48,6 @@ namespace UnrealViewerAPI.Controllers
 
             return dataTables;
         }
-
         public Task<DataSet> GetDataSetAsync(string sConnectionString, string sSQL, int cur, int page)
         {
             return Task.Run(() =>
@@ -91,7 +89,6 @@ namespace UnrealViewerAPI.Controllers
 
             return dataSet;
         }
-
         public void ExecuteNonQuery(string query, string dataSource)
         {
             try

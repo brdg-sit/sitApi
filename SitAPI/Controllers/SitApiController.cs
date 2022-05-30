@@ -1060,6 +1060,23 @@ namespace UnrealViewerAPI.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("train-ml")]
+        public string TrainML([FromBody] MLTrain mlTrain)
+        {
+            try
+            {
+                EnergyTrainingController training = new EnergyTrainingController();
+                var result = training.Train(mlTrain.area, mlTrain.eqmt, mlTrain.type);
+                return result;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return "ML Train Failed";
+            }
+        }
+
         
     }
 
@@ -1197,5 +1214,12 @@ namespace UnrealViewerAPI.Controllers
 
             return val2;
         }
+    }
+
+    public class MLTrain
+    {
+        public string area { get; set; }
+        public string eqmt { get; set; }
+        public string type { get; set; }
     }
 }
