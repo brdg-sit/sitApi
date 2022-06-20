@@ -470,6 +470,8 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
+
+
                 $"DECLARE @cvtHeat FLOAT, @cvtCool FLOAT, @cvtBC FLOAT " +
                 $"IF((SELECT cd_eqmt FROM tbl_user_enter WHERE id = {id_etr}) = 401) " +
                     $"BEGIN " +
@@ -612,7 +614,7 @@ namespace UnrealViewerAPI.Controllers
         public string GetUserEnter(string id_etr)
         {
             string dataSource = _configuration.GetConnectionString("PROD");
-            string query = $"SELECT * FROM tbl_user_enter WHERE id_etr=" + id_etr;
+            string query = $"SELECT * FROM tbl_user_enter WHERE id=" + id_etr;
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 

@@ -141,7 +141,7 @@ namespace EC_API.Controllers
 
             ITransformer trainedModel = pipelineEstimator.Fit(trainData);
 
-            var savingDir = Path.Combine(Directory.GetCurrentDirectory(), "MLResults");
+            var savingDir = Path.Combine(Directory.GetCurrentDirectory(), "ML");
 
             if (!Directory.Exists(savingDir))
             {
