@@ -392,27 +392,6 @@ namespace UnrealViewerAPI.Controllers
             double ml_load_baseElec = mlController.PredictLoadBaseElec(query, dataSource);
             // ==================
 
-            using (SqlConnection connection = new SqlConnection())
-            {
-                connection.ConnectionString = _configuration.GetConnectionString("PROD");
-                connection.Open();
-
-                string queryUpdate =
-                    $"UPDATE " +
-                        $"tbl_ml " +
-                    $"SET " +
-                        $"load_cool = {ml_load_cool}, " +
-                        $"load_heat = {ml_load_heat}, " +
-                        $"load_baseElec = {ml_load_baseElec} " +
-                    $"WHERE " +
-                        $"id = {id_etr}";
-
-                using (SqlCommand command = new SqlCommand(queryUpdate, connection))
-                {
-                    command.ExecuteNonQuery();
-                }
-            }
-
             // 용도별 에너지 비율
             double rate_load_cool = mlStdd_load_cool / ml_load_cool;
             double rate_load_heat = mlStdd_load_heat / ml_load_heat;
@@ -438,6 +417,7 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
 
+
                 // 월별 참조 사용행태 에너지 (1)
                 $"SELECT " +
                     $"mnth, " +
@@ -448,6 +428,7 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
+
 
                 // 월별 유사건물군 평균치 에너지 (2)
                 $"SELECT " +
@@ -467,6 +448,7 @@ namespace UnrealViewerAPI.Controllers
                         $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
                 $"GROUP BY mnth; " +
 
+
                 // 연간 사용자입력 에너지 (3)
                 $"SELECT " +
                     $"SUM(load_cool) as yr_load_cool, " +
@@ -478,6 +460,7 @@ namespace UnrealViewerAPI.Controllers
                     $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
 
+
                 // 연간 참조 사용행태 에너지 (4)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool * {rate_load_cool}), 2) as yr_load_cool, " +
@@ -487,6 +470,8 @@ namespace UnrealViewerAPI.Controllers
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
+
+
                 $"DECLARE @cvtHeat FLOAT, @cvtCool FLOAT, @cvtBC FLOAT " +
                 $"IF((SELECT cd_eqmt FROM tbl_user_enter WHERE id = {id_etr}) = 401) " +
                     $"BEGIN " +
@@ -500,6 +485,7 @@ namespace UnrealViewerAPI.Controllers
                         $"SET @cvtCool = 0.000207 " +
                         $"SET @cvtBC = 0.00046 " +
                     $"END " +
+
 
                 // 월별 유사건물군 평균치 CO2 (5)
                 $"SELECT " +
@@ -519,6 +505,7 @@ namespace UnrealViewerAPI.Controllers
                         $"area='{area}' AND cd_eqmt='{cd_eqmt}' AND hur_wday={hur_wday} AND hur_wend={hur_wend}) " +
                 $"GROUP BY mnth; " +
 
+
                 // 연간 사용자입력 CO2 (6)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool) * @cvtCool, 4) as yr_co2_cool,  " +
@@ -529,11 +516,12 @@ namespace UnrealViewerAPI.Controllers
                 $"WHERE  " +
                     $"id_etr = {id_etr} AND is_sep = 1; " +
 
+
                 // 연간 참조 사용행태 CO2 (7)
                 $"SELECT " +
                     $"ROUND(SUM(load_cool * {rate_load_cool}) * @cvtCool, 4) as yr_co2_cool, " +
-                    $"ROUND(SUM(load_cool * {rate_load_heat}) * @cvtHeat, 4) as yr_co2_heat, " +
-                    $"ROUND(SUM(load_cool * {rate_load_baseElec}) * @cvtBC, 4) as yr_co2_baseElec " +
+                    $"ROUND(SUM(load_heat * {rate_load_heat}) * @cvtHeat, 4) as yr_co2_heat, " +
+                    $"ROUND(SUM(load_baseElec * {rate_load_baseElec}) * @cvtBC, 4) as yr_co2_baseElec " +
                 $"FROM " +
                     $"tbl_load_energy_usg " +
                 $"WHERE " +
@@ -543,11 +531,6 @@ namespace UnrealViewerAPI.Controllers
             return JsonConvert.SerializeObject(transaction.GetTablesFromDB(query, dataSource));
         }
 
-        /// <summary>
-        /// 미사용
-        /// </summary>
-        /// <param name="id_etr"></param>
-        /// <returns></returns>
         [HttpGet]
         [Route("get-energyusage-ml")]
         public string GetEnergyUsageML(string id_etr)
@@ -600,14 +583,6 @@ namespace UnrealViewerAPI.Controllers
             }
         }
 
-        /// <summary>
-        /// 미사용
-        /// </summary>
-        /// <param name="area"></param>
-        /// <param name="eqmt"></param>
-        /// <param name="wday"></param>
-        /// <param name="wend"></param>
-        /// <returns></returns>
         [HttpGet]
         [Route("get-energyusage-avg")]
         public string GetEnergyUsageAvg(string area, string eqmt, string wday, string wend)
@@ -639,7 +614,7 @@ namespace UnrealViewerAPI.Controllers
         public string GetUserEnter(string id_etr)
         {
             string dataSource = _configuration.GetConnectionString("PROD");
-            string query = $"SELECT * FROM tbl_user_enter WHERE id_etr=" + id_etr;
+            string query = $"SELECT * FROM tbl_user_enter WHERE id=" + id_etr;
             return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
         }
 
