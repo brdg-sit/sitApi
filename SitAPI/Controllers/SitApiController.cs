@@ -392,6 +392,27 @@ namespace UnrealViewerAPI.Controllers
             double ml_load_baseElec = mlController.PredictLoadBaseElec(query, dataSource);
             // ==================
 
+            using (SqlConnection connection = new SqlConnection())
+            {
+                connection.ConnectionString = _configuration.GetConnectionString("PROD");
+                connection.Open();
+
+                string queryUpdate =
+                    $"UPDATE " +
+                        $"tbl_ml " +
+                    $"SET " +
+                        $"load_cool = {ml_load_cool}, " +
+                        $"load_heat = {ml_load_heat}, " +
+                        $"load_baseElec = {ml_load_baseElec} " +
+                    $"WHERE " +
+                        $"id_etr = {id_etr}";
+
+                using (SqlCommand command = new SqlCommand(queryUpdate, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+
             // 용도별 에너지 비율
             double rate_load_cool = mlStdd_load_cool / ml_load_cool;
             double rate_load_heat = mlStdd_load_heat / ml_load_heat;
