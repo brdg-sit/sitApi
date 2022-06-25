@@ -47,7 +47,7 @@ namespace UnrealViewerAPI.Controllers
         }
 
         [HttpGet]
-        [Route("mldata")]
+        [Route("mldata2")]
         public string GetMlData(string id_etr)
         {
             string query = $"SELECT * FROM tbl_ml WHERE id_etr = {id_etr}";
