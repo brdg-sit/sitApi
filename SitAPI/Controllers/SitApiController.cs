@@ -47,6 +47,17 @@ namespace UnrealViewerAPI.Controllers
         }
 
         [HttpGet]
+        [Route("mldata")]
+        public string GetMlData(string id_etr)
+        {
+            string query = $"SELECT * FROM tbl_ml WHERE id_etr = {id_etr}";
+
+            string dataSource = _configuration.GetConnectionString("PROD");
+
+            return JsonConvert.SerializeObject(transaction.GetTableFromDB(query, dataSource));
+        }
+
+        [HttpGet]
         [Route("userdata")]
         public string GetUserData()
         {
